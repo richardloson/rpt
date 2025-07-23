@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte Semanal de Bombas</title>
+    <!-- Carga de Tailwind CSS para estilos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carga de jsPDF y html2canvas para exportar a PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        /* Estilos personalizados para la fuente Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Fondo gris claro */
+        }
+        /* Estilos para el contenedor principal para centrar y añadir padding */
+        .container {
+            max-width: 900px; /* Ancho máximo para el contenido */
+            margin: 2rem auto; /* Margen automático para centrar */
+            padding: 1.5rem; /* Espaciado interno */
+            background-color: #ffffff; /* Fondo blanco para el contenido */
+            border-radius: 12px; /* Esquinas redondeadas */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Sombra suave */
+        }
+        /* Estilos para los campos de entrada y select */
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select,
+        textarea {
+            border: 1px solid #d1d5db; /* Borde gris */
+            border-radius: 6px; /* Esquinas redondeadas */
+            padding: 0.75rem 1rem; /* Espaciado interno */
+            width: 100%; /* Ancho completo */
+            font-size: 1rem; /* Tamaño de fuente */
+            line-height: 1.5; /* Altura de línea */
+            color: #374151; /* Color de texto */
+            background-color: #ffffff; /* Fondo blanco */
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Transición suave */
+        }
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none; /* Sin contorno al enfocar */
+            border-color: #3b82f6; /* Borde azul al enfocar */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* Sombra azul al enfocar */
+        }
+        /* Estilos para los botones */
+        .btn {
+            background-color: #2563eb; /* Fondo azul oscuro */
+            color: #ffffff; /* Texto blanco */
+            padding: 0.8rem 1.5rem; /* Espaciado interno */
+            border-radius: 8px; /* Esquinas redondeadas */
+            font-weight: 600; /* Texto en negrita */
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out; /* Transición suave */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Sombra para el botón */
+            cursor: pointer; /* Cursor de puntero */
+        }
+        .btn:hover {
+            background-color: #1d4ed8; /* Azul más oscuro al pasar el ratón */
+            transform: translateY(-1px); /* Ligero levantamiento al pasar el ratón */
+        }
+        .btn:active {
+            transform: translateY(0); /* Vuelve a la posición original al hacer clic */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra más pequeña al hacer clic */
+        }
+        /* Estilos para el botón de exportar PDF */
+        #exportPdfBtn {
+            background-color: #dc2626; /* Fondo rojo */
+        }
+        #exportPdfBtn:hover {
+            background-color: #b91c1c; /* Rojo más oscuro al pasar el ratón */
+        }
+        /* Estilos para los títulos de sección */
+        .section-title {
+            border-bottom: 2px solid #e5e7eb; /* Línea divisoria */
+            padding-bottom: 0.75rem; /* Espaciado inferior */
+            margin-bottom: 1.5rem; /* Margen inferior */
+            color: #1f2937; /* Color de texto oscuro */
+        }
+        /* Estilos para los elementos de reporte enviados */
+        .report-item {
+            background-color: #f9fafb; /* Fondo gris muy claro */
+            border: 1px solid #e5e7eb; /* Borde gris */
+            border-radius: 8px; /* Esquinas redondeadas */
+            padding: 1rem; /* Espaciado interno */
+            margin-bottom: 1rem; /* Margen inferior */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Logotipo de la aplicación -->
+        <div class="flex justify-center mb-6">
+            <img src="http://googleusercontent.com/file_content/1" alt="Logotipo RCI" class="h-20 w-auto rounded-md shadow-md object-contain">
+        </div>
+
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Reporte Semanal de Bombas</h1>
+
+        <form id="reportForm" class="space-y-6">
+            <!-- Sección de Información General -->
+            <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4 section-title">Información General</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="planta" class="block text-sm font-medium text-gray-700 mb-1">Planta:</label>
+                        <input type="text" id="planta" name="planta" class="mt-1 block w-full" required>
+                    </div>
+                    <div>
+                        <label for="fecha" class="block text-sm font-medium text-gray-700 mb-1">Fecha:</label>
+                        <input type="date" id="fecha" name="fecha" class="mt-1 block w-full" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de Bomba Diesel -->
+            <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4 section-title">Bomba Diesel</h2>
+
+                <!-- Pregunta 1: Tablero Principal en Automático -->
+                <div class="mb-4">
+                    <label for="diesel_tableroAutomatico" class="block text-sm font-medium text-gray-700 mb-1">1. ¿Se encontró el tablero principal en automático?</label>
+                    <select id="diesel_tableroAutomatico" name="diesel_tableroAutomatico" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="diesel_comentariosTablero" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosTablero" name="diesel_comentariosTablero" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 2: Válvula de Succión Abierta -->
+                <div class="mb-4">
+                    <label for="diesel_valvulaSuccionAbierta" class="block text-sm font-medium text-gray-700 mb-1">2. ¿Se encontró abierta la válvula de succión?</label>
+                    <select id="diesel_valvulaSuccionAbierta" name="diesel_valvulaSuccionAbierta" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="diesel_comentariosValvulaSuccion" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosValvulaSuccion" name="diesel_comentariosValvulaSuccion" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 3: Válvula de Descarga Abierta -->
+                <div class="mb-4">
+                    <label for="diesel_valvulaDescargaAbierta" class="block text-sm font-medium text-gray-700 mb-1">3. ¿Se encontró abierta la válvula de descarga?</label>
+                    <select id="diesel_valvulaDescargaAbierta" name="diesel_valvulaDescargaAbierta" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="diesel_comentariosValvulaDescarga" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosValvulaDescarga" name="diesel_comentariosValvulaDescarga" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 4: Tablero Principal Energizado -->
+                <div class="mb-4">
+                    <label for="diesel_lecturaTableroEnergizado" class="block text-sm font-medium text-gray-700 mb-1">4. ¿Se encuentra energizado el tablero principal?</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="diesel_lecturaTableroEnergizado" name="diesel_lecturaTableroEnergizado" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">VAC</span>
+                    </div>
+                    <label for="diesel_comentariosTableroEnergizado" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosTableroEnergizado" name="diesel_comentariosTableroEnergizado" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 5: Nivel de Aceite Adecuado -->
+                <div class="mb-4">
+                    <label for="diesel_nivelAceite" class="block text-sm font-medium text-gray-700 mb-1">5. ¿El nivel del aceite es el adecuado?</label>
+                    <select id="diesel_nivelAceite" name="diesel_nivelAceite" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="diesel_comentariosNivelAceite" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosNivelAceite" name="diesel_comentariosNivelAceite" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 6: Nivel del Agua Adecuado -->
+                <div class="mb-4">
+                    <label for="diesel_nivelAgua" class="block text-sm font-medium text-gray-700 mb-1">6. ¿El nivel del agua es el adecuado?</label>
+                    <select id="diesel_nivelAgua" name="diesel_nivelAgua" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="diesel_comentariosNivelAgua" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosNivelAgua" name="diesel_comentariosNivelAgua" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 7: Tanque Diesel Arriba de 3/4 -->
+                <div class="mb-4">
+                    <label for="diesel_tanqueDiesel" class="block text-sm font-medium text-gray-700 mb-1">7. ¿El tanque diesel se encuentra arriba de 3/4 de su capacidad?</label>
+                    <select id="diesel_tanqueDiesel" name="diesel_tanqueDiesel" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="diesel_comentariosTanqueDiesel" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosTanqueDiesel" name="diesel_comentariosTanqueDiesel" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 8: Nivel de la Cisterna Adecuado -->
+                <div class="mb-4">
+                    <label for="diesel_nivelCisterna" class="block text-sm font-medium text-gray-700 mb-1">8. ¿El nivel de la cisterna es adecuado?</label>
+                    <select id="diesel_nivelCisterna" name="diesel_nivelCisterna" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="diesel_comentariosNivelCisterna" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosNivelCisterna" name="diesel_comentariosNivelCisterna" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 9: Banco 1 Cargado -->
+                <div class="mb-4">
+                    <label for="diesel_banco1Cargado" class="block text-sm font-medium text-gray-700 mb-1">9. ¿El banco 1 se encuentra cargado?</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="diesel_lecturaBanco1Cargado" name="diesel_lecturaBanco1Cargado" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">VDC</span>
+                    </div>
+                    <label for="diesel_comentariosBanco1Cargado" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosBanco1Cargado" name="diesel_comentariosBanco1Cargado" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 10: Banco 2 Cargado -->
+                <div class="mb-4">
+                    <label for="diesel_banco2Cargado" class="block text-sm font-medium text-gray-700 mb-1">10. ¿El banco 2 se encuentra cargado?</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="diesel_lecturaBanco2Cargado" name="diesel_lecturaBanco2Cargado" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">VDC</span>
+                    </div>
+                    <label for="diesel_comentariosBanco2Cargado" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosBanco2Cargado" name="diesel_comentariosBanco2Cargado" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 11: Cargador 1 Operando -->
+                <div class="mb-4">
+                    <label for="diesel_cargador1Operando" class="block text-sm font-medium text-gray-700 mb-1">11. ¿El cargador 1 está operando?</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="diesel_lecturaCargador1Operando" name="diesel_lecturaCargador1Operando" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">VDC</span>
+                    </div>
+                    <label for="diesel_comentariosCargador1Operando" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosCargador1Operando" name="diesel_comentariosCargador1Operando" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 12: Cargador 2 Operando -->
+                <div class="mb-4">
+                    <label for="diesel_cargador2Operando" class="block text-sm font-medium text-gray-700 mb-1">12. ¿El cargador 2 está operando?</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="diesel_lecturaCargador2Operando" name="diesel_lecturaCargador2Operando" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">VDC</span>
+                    </div>
+                    <label for="diesel_comentariosCargador2Operando" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosCargador2Operando" name="diesel_comentariosCargador2Operando" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 13: Nivel del Agua en las Baterías Adecuado -->
+                <div class="mb-4">
+                    <label for="diesel_nivelAguaBaterias" class="block text-sm font-medium text-gray-700 mb-1">13. ¿El nivel del agua en las baterías es adecuado?</label>
+                    <select id="diesel_nivelAguaBaterias" name="diesel_nivelAguaBaterias" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="diesel_comentariosNivelAguaBaterias" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosNivelAguaBaterias" name="diesel_comentariosNivelAguaBaterias" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 14: Bornes de las Baterías Apretados -->
+                <div class="mb-4">
+                    <label for="diesel_bornesBateriasApretados" class="block text-sm font-medium text-gray-700 mb-1">14. ¿Se encontraron apretados los bornes de las baterías?</label>
+                    <select id="diesel_bornesBateriasApretados" name="diesel_bornesBateriasApretados" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="diesel_comentariosBornesBaterias" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosBornesBaterias" name="diesel_comentariosBornesBaterias" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 15: Parámetros del Switch de Presión -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">15. Parámetros del Switch de Presión:</label>
+                    <div class="flex items-center space-x-2 mt-1 mb-2">
+                        <span class="text-gray-600 w-1/2">Manual:</span>
+                        <input type="text" id="diesel_lecturaSwitchPresionManual" name="diesel_lecturaSwitchPresionManual" placeholder="Lectura Manual" class="w-1/2">
+                    </div>
+                    <div class="flex items-center space-x-2 mt-1 mb-2">
+                        <span class="text-gray-600 w-1/2">Presión de Arranque:</span>
+                        <input type="number" id="diesel_lecturaPresionArranque" name="diesel_lecturaPresionArranque" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">PSI</span>
+                    </div>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <span class="text-gray-600 w-1/2">Presión de Paro:</span>
+                        <input type="text" id="diesel_lecturaPresionParoManual" name="diesel_lecturaPresionParoManual" placeholder="Lectura Manual" class="w-1/2">
+                    </div>
+                    <label for="diesel_comentariosSwitchPresion" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosSwitchPresion" name="diesel_comentariosSwitchPresion" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 16: Temperatura del Agua en el Motor -->
+                <div class="mb-4">
+                    <label for="diesel_temperaturaAguaMotor" class="block text-sm font-medium text-gray-700 mb-1">16. ¿La temperatura del agua en el motor antes del arranque es la adecuada?</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="diesel_lecturaTemperaturaAguaMotor" name="diesel_lecturaTemperaturaAguaMotor" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">° C</span>
+                    </div>
+                    <label for="diesel_comentariosTemperaturaAguaMotor" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosTemperaturaAguaMotor" name="diesel_comentariosTemperaturaAguaMotor" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 17: Precalentador Opera Correctamente -->
+                <div class="mb-4">
+                    <label for="diesel_precalentadorOpera" class="block text-sm font-medium text-gray-700 mb-1">17. ¿El precalentador opera correctamente?</label>
+                    <select id="diesel_precalentadorOpera" name="diesel_precalentadorOpera" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="diesel_comentariosPrecalentador" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosPrecalentador" name="diesel_comentariosPrecalentador" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 18: Presión del Aceite Verificada -->
+                <div class="mb-4">
+                    <label for="diesel_presionAceite" class="block text-sm font-medium text-gray-700 mb-1">18. ¿Se verificó la presión del aceite?</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="diesel_lecturaPresionAceite" name="diesel_lecturaPresionAceite" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">PSI</span>
+                    </div>
+                    <label for="diesel_comentariosPresionAceite" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosPresionAceite" name="diesel_comentariosPresionAceite" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 19: Manómetro de Succión Opera -->
+                <div class="mb-4">
+                    <label for="diesel_manometroSuccion" class="block text-sm font-medium text-gray-700 mb-1">19. ¿Opera el manómetro de succión?</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="diesel_lecturaManometroSuccion" name="diesel_lecturaManometroSuccion" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">PSI</span>
+                    </div>
+                    <label for="diesel_comentariosManometroSuccion" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosManometroSuccion" name="diesel_comentariosManometroSuccion" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 20: Manómetro Línea Enfriamiento Opera -->
+                <div class="mb-4">
+                    <label for="diesel_manometroLineaEnfriamiento" class="block text-sm font-medium text-gray-700 mb-1">20. ¿Opera el manómetro de la línea de enfriamiento?</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="diesel_lecturaManometroLineaEnfriamiento" name="diesel_lecturaManometroLineaEnfriamiento" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">PSI</span>
+                    </div>
+                    <label for="diesel_comentariosManometroLineaEnfriamiento" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosManometroLineaEnfriamiento" name="diesel_comentariosManometroLineaEnfriamiento" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 21: Manómetro de Descarga Opera -->
+                <div class="mb-4">
+                    <label for="diesel_manometroDescarga" class="block text-sm font-medium text-gray-700 mb-1">21. ¿Opera el manómetro de la descarga?</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="diesel_lecturaManometroDescarga" name="diesel_lecturaManometroDescarga" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">PSI</span>
+                    </div>
+                    <label for="diesel_comentariosManometroDescarga" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosManometroDescarga" name="diesel_comentariosManometroDescarga" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 22: Velocidad de la Bomba Verificada -->
+                <div class="mb-4">
+                    <label for="diesel_velocidadBomba" class="block text-sm font-medium text-gray-700 mb-1">22. ¿Se verificó la velocidad de la bomba?</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="diesel_lecturaVelocidadBomba" name="diesel_lecturaVelocidadBomba" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">RPM</span>
+                    </div>
+                    <label for="diesel_comentariosVelocidadBomba" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosVelocidadBomba" name="diesel_comentariosVelocidadBomba" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 23: Horas Trabajadas del Motor Registradas -->
+                <div class="mb-4">
+                    <label for="diesel_horasTrabajadasMotor" class="block text-sm font-medium text-gray-700 mb-1">23. ¿Se registró las horas trabajadas del motor?</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="diesel_lecturaHorasTrabajadasMotor" name="diesel_lecturaHorasTrabajadasMotor" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">HRS</span>
+                    </div>
+                    <label for="diesel_comentariosHorasTrabajadasMotor" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosHorasTrabajadasMotor" name="diesel_comentariosHorasTrabajadasMotor" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 24: Cranks del Tablero Principal Operaron -->
+                <div class="mb-4">
+                    <label for="diesel_cranksTableroPrincipal" class="block text-sm font-medium text-gray-700 mb-1">24. ¿Operaron los cranks del tablero principal?</label>
+                    <select id="diesel_cranksTableroPrincipal" name="diesel_cranksTableroPrincipal" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="diesel_comentariosCranksTableroPrincipal" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosCranksTableroPrincipal" name="diesel_comentariosCranksTableroPrincipal" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 25: Cranks del Tablero del Motor Operaron -->
+                <div class="mb-4">
+                    <label for="diesel_cranksTableroMotor" class="block text-sm font-medium text-gray-700 mb-1">25. ¿Operaron los cranks del tablero del motor?</label>
+                    <select id="diesel_cranksTableroMotor" name="diesel_cranksTableroMotor" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="diesel_comentariosCranksTableroMotor" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosCranksTableroMotor" name="diesel_comentariosCranksTableroMotor" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 26: Arrancadores del Motor Operaron -->
+                <div class="mb-4">
+                    <label for="diesel_arrancadoresMotor" class="block text-sm font-medium text-gray-700 mb-1">26. ¿Operaron los arrancadores del motor?</label>
+                    <select id="diesel_arrancadoresMotor" name="diesel_arrancadoresMotor" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="diesel_comentariosArrancadoresMotor" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosArrancadoresMotor" name="diesel_comentariosArrancadoresMotor" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 27: Temperatura del Motor en Operación Adecuada -->
+                <div class="mb-4">
+                    <label for="diesel_temperaturaMotorOperacion" class="block text-sm font-medium text-gray-700 mb-1">27. ¿La temperatura del motor en operación es la adecuada?</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="diesel_lecturaTemperaturaMotorOperacion" name="diesel_lecturaTemperaturaMotorOperacion" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">° C</span>
+                    </div>
+                    <label for="diesel_comentariosTemperaturaMotorOperacion" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosTemperaturaMotorOperacion" name="diesel_comentariosTemperaturaMotorOperacion" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 28: Calentamiento de Estoperos de la Bomba -->
+                <div class="mb-4">
+                    <label for="diesel_calentamientoEstoperos" class="block text-sm font-medium text-gray-700 mb-1">28. ¿Presenta calentamiento los estoperos de la bomba?</label>
+                    <select id="diesel_calentamientoEstoperos" name="diesel_calentamientoEstoperos" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="diesel_comentariosCalentamientoEstoperos" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosCalentamientoEstoperos" name="diesel_comentariosCalentamientoEstoperos" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 29: Calentamientos de Baleros de la Bomba -->
+                <div class="mb-4">
+                    <label for="diesel_calentamientoBaleros" class="block text-sm font-medium text-gray-700 mb-1">29. ¿Presenta calentamientos los baleros de la bomba?</label>
+                    <select id="diesel_calentamientoBaleros" name="diesel_calentamientoBaleros" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="diesel_comentariosCalentamientoBaleros" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosCalentamientoBaleros" name="diesel_comentariosCalentamientoBaleros" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 30: Ruidos Anormales la Bomba -->
+                <div class="mb-4">
+                    <label for="diesel_ruidosAnormales" class="block text-sm font-medium text-gray-700 mb-1">30. ¿Presenta ruidos anormales la bomba?</label>
+                    <select id="diesel_ruidosAnormales" name="diesel_ruidosAnormales" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="diesel_comentariosRuidosAnormales" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosRuidosAnormales" name="diesel_comentariosRuidosAnormales" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 31: Selector Queda en Automático -->
+                <div class="mb-4">
+                    <label for="diesel_selectorAutomatico" class="block text-sm font-medium text-gray-700 mb-1">31. ¿El selector queda en automático?</label>
+                    <select id="diesel_selectorAutomatico" name="diesel_selectorAutomatico" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="diesel_comentariosSelectorAutomatico" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="diesel_comentariosSelectorAutomatico" name="diesel_comentariosSelectorAutomatico" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+            </div>
+
+            <!-- Sección de Bomba Eléctrica -->
+            <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4 section-title">Bomba Eléctrica</h2>
+
+                <!-- Pregunta 1: Tablero Principal en Automático -->
+                <div class="mb-4">
+                    <label for="electrica_tableroAutomatico" class="block text-sm font-medium text-gray-700 mb-1">1. ¿Se encontró el tablero principal en automático?</label>
+                    <select id="electrica_tableroAutomatico" name="electrica_tableroAutomatico" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="electrica_comentariosTablero" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="electrica_comentariosTablero" name="electrica_comentariosTablero" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 2: Válvulas de Succión y Descarga Abiertas y/o Aseguradas -->
+                <div class="mb-4">
+                    <label for="electrica_valvulasAbiertasAseguradas" class="block text-sm font-medium text-gray-700 mb-1">2. ¿Las válvulas de succión y descarga se encontraron abiertas y/o aseguradas?</label>
+                    <select id="electrica_valvulasAbiertasAseguradas" name="electrica_valvulasAbiertasAseguradas" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="electrica_comentariosValvulas" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="electrica_comentariosValvulas" name="electrica_comentariosValvulas" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 3: Voltaje de Entrada del Interruptor Principal Verificado -->
+                <div class="mb-4">
+                    <label for="electrica_voltajeEntradaPpal" class="block text-sm font-medium text-gray-700 mb-1">3. ¿Se verificó el voltaje de entrada del interruptor principal?</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-1">
+                        <input type="number" id="electrica_lecturaL12Entrada" name="electrica_lecturaL12Entrada" placeholder="L1,2=">
+                        <input type="number" id="electrica_lecturaL23Entrada" name="electrica_lecturaL23Entrada" placeholder="L2,3=">
+                        <input type="number" id="electrica_lecturaL13Entrada" name="electrica_lecturaL13Entrada" placeholder="L1,3=">
+                    </div>
+                    <label for="electrica_comentariosVoltajeEntradaPpal" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="electrica_comentariosVoltajeEntradaPpal" name="electrica_comentariosVoltajeEntradaPpal" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 4: Voltaje de Salida del Interruptor Principal Verificado -->
+                <div class="mb-4">
+                    <label for="electrica_voltajeSalidaPpal" class="block text-sm font-medium text-gray-700 mb-1">4. ¿Se verificó el voltaje de salida del interruptor principal?</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-1">
+                        <input type="number" id="electrica_lecturaL12Salida" name="electrica_lecturaL12Salida" placeholder="L1,2=">
+                        <input type="number" id="electrica_lecturaL23Salida" name="electrica_lecturaL23Salida" placeholder="L2,3=">
+                        <input type="number" id="electrica_lecturaL13Salida" name="electrica_lecturaL13Salida" placeholder="L1,3=">
+                    </div>
+                    <label for="electrica_comentariosVoltajeSalidaPpal" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="electrica_comentariosVoltajeSalidaPpal" name="electrica_comentariosVoltajeSalidaPpal" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 5: Voltaje de Entrada del Contactor Verificado -->
+                <div class="mb-4">
+                    <label for="electrica_voltajeEntradaContactor" class="block text-sm font-medium text-gray-700 mb-1">5. ¿Se verificó el voltaje de entrada del contactor?</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-1">
+                        <input type="number" id="electrica_lecturaL12ContactorEntrada" name="electrica_lecturaL12ContactorEntrada" placeholder="L1,2=">
+                        <input type="number" id="electrica_lecturaL23ContactorEntrada" name="electrica_lecturaL23ContactorEntrada" placeholder="L2,3=">
+                        <input type="number" id="electrica_lecturaL13ContactorEntrada" name="electrica_lecturaL13ContactorEntrada" placeholder="L1,3=">
+                    </div>
+                    <label for="electrica_comentariosVoltajeEntradaContactor" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="electrica_comentariosVoltajeEntradaContactor" name="electrica_comentariosVoltajeEntradaContactor" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 6: Voltaje de Salida del Contactor Verificado -->
+                <div class="mb-4">
+                    <label for="electrica_voltajeSalidaContactor" class="block text-sm font-medium text-gray-700 mb-1">6. ¿Se verificó el voltaje de salida del contactor?</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-1">
+                        <input type="number" id="electrica_lecturaL12ContactorSalida" name="electrica_lecturaL12ContactorSalida" placeholder="L1,2=">
+                        <input type="number" id="electrica_lecturaL23ContactorSalida" name="electrica_lecturaL23ContactorSalida" placeholder="L2,3=">
+                        <input type="number" id="electrica_lecturaL13ContactorSalida" name="electrica_lecturaL13ContactorSalida" placeholder="L1,3=">
+                    </div>
+                    <label for="electrica_comentariosVoltajeSalidaContactor" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="electrica_comentariosVoltajeSalidaContactor" name="electrica_comentariosVoltajeSalidaContactor" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 7: Corriente de Tablero Verificada -->
+                <div class="mb-4">
+                    <label for="electrica_corrienteTablero" class="block text-sm font-medium text-gray-700 mb-1">7. ¿Se verificó la corriente de tablero?</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-1">
+                        <input type="number" id="electrica_lecturaI1" name="electrica_lecturaI1" placeholder="I1.=">
+                        <input type="number" id="electrica_lecturaI2" name="electrica_lecturaI2" placeholder="I2=">
+                        <input type="number" id="electrica_lecturaI3" name="electrica_lecturaI3" placeholder="I3=">
+                    </div>
+                    <label for="electrica_comentariosCorrienteTablero" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="electrica_comentariosCorrienteTablero" name="electrica_comentariosCorrienteTablero" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 8: Manómetro de Descarga Operando -->
+                <div class="mb-4">
+                    <label for="electrica_manometroDescargaOperando" class="block text-sm font-medium text-gray-700 mb-1">8. ¿El manómetro de descarga se encuentra operando?</label>
+                    <select id="electrica_manometroDescargaOperando" name="electrica_manometroDescargaOperando" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="electrica_lecturaManometroDescarga" name="electrica_lecturaManometroDescarga" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">PSI</span>
+                    </div>
+                    <label for="electrica_comentariosManometroDescarga" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="electrica_comentariosManometroDescarga" name="electrica_comentariosManometroDescarga" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 9: Parámetros del Switch de Presión -->
+                <div class="mb-4">
+                    <label for="electrica_parametrosSwitchPresion" class="block text-sm font-medium text-gray-700 mb-1">9. Parámetros del Switch de Presión:</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="electrica_lecturaParametrosSwitchPresion" name="electrica_lecturaParametrosSwitchPresion" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">PSI</span>
+                    </div>
+                    <label for="electrica_comentariosParametrosSwitchPresion" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="electrica_comentariosParametrosSwitchPresion" name="electrica_comentariosParametrosSwitchPresion" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 10: Presión de Arranque Verificada -->
+                <div class="mb-4">
+                    <label for="electrica_presionArranque" class="block text-sm font-medium text-gray-700 mb-1">10. ¿Se verificó la presión de arranque?</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="electrica_lecturaPresionArranque" name="electrica_lecturaPresionArranque" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">PSI</span>
+                    </div>
+                    <label for="electrica_comentariosPresionArranque" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="electrica_comentariosPresionArranque" name="electrica_comentariosPresionArranque" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 11: Presión de Paro Verificada -->
+                <div class="mb-4">
+                    <label for="electrica_presionParo" class="block text-sm font-medium text-gray-700 mb-1">11. ¿Se verificó la presión de paro?</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="electrica_lecturaPresionParo" name="electrica_lecturaPresionParo" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">PSI</span>
+                    </div>
+                    <label for="electrica_comentariosPresionParo" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="electrica_comentariosPresionParo" name="electrica_comentariosPresionParo" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+            </div>
+
+            <!-- Sección de Bomba Jockey -->
+            <div class="bg-gray-50 p-6 rounded-lg shadow-inner">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-4 section-title">Bomba Jockey</h2>
+
+                <!-- Pregunta 1: Tablero Principal en Automático -->
+                <div class="mb-4">
+                    <label for="jockey_tableroAutomatico" class="block text-sm font-medium text-gray-700 mb-1">1. ¿Se encontró el tablero principal en automático?</label>
+                    <select id="jockey_tableroAutomatico" name="jockey_tableroAutomatico" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="jockey_comentariosTablero" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="jockey_comentariosTablero" name="jockey_comentariosTablero" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 2: Válvulas, Succión y Descarga, Abiertas y/o Aseguradas -->
+                <div class="mb-4">
+                    <label for="jockey_valvulasAbiertasAseguradas" class="block text-sm font-medium text-gray-700 mb-1">2. ¿Válvulas, succión y descarga, abiertas y/o aseguradas?</label>
+                    <select id="jockey_valvulasAbiertasAseguradas" name="jockey_valvulasAbiertasAseguradas" class="mt-1 block w-full">
+                        <option value="">Seleccionar</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                    </select>
+                    <label for="jockey_comentariosValvulas" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="jockey_comentariosValvulas" name="jockey_comentariosValvulas" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 3: Voltaje de Entrada del Interruptor Principal Verificado -->
+                <div class="mb-4">
+                    <label for="jockey_voltajeEntradaPpal" class="block text-sm font-medium text-gray-700 mb-1">3. ¿Se verificó el voltaje de entrada del interruptor principal?</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-1">
+                        <input type="number" id="jockey_lecturaL12Entrada" name="jockey_lecturaL12Entrada" placeholder="L1,2=">
+                        <input type="number" id="jockey_lecturaL23Entrada" name="jockey_lecturaL23Entrada" placeholder="L2,3=">
+                        <input type="number" id="jockey_lecturaL13Entrada" name="jockey_lecturaL13Entrada" placeholder="L1,3=">
+                    </div>
+                    <label for="jockey_comentariosVoltajeEntradaPpal" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="jockey_comentariosVoltajeEntradaPpal" name="jockey_comentariosVoltajeEntradaPpal" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 4: Voltaje de Salida del Interruptor Principal Verificado -->
+                <div class="mb-4">
+                    <label for="jockey_voltajeSalidaPpal" class="block text-sm font-medium text-gray-700 mb-1">4. ¿Se verificó el voltaje de salida del interruptor principal?</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-1">
+                        <input type="number" id="jockey_lecturaL12Salida" name="jockey_lecturaL12Salida" placeholder="L1,2=">
+                        <input type="number" id="jockey_lecturaL23Salida" name="jockey_lecturaL23Salida" placeholder="L2,3=">
+                        <input type="number" id="jockey_lecturaL13Salida" name="jockey_lecturaL13Salida" placeholder="L1,3=">
+                    </div>
+                    <label for="jockey_comentariosVoltajeSalidaPpal" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="jockey_comentariosVoltajeSalidaPpal" name="jockey_comentariosVoltajeSalidaPpal" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 5: Voltaje de Entrada del Contactor Verificado -->
+                <div class="mb-4">
+                    <label for="jockey_voltajeEntradaContactor" class="block text-sm font-medium text-gray-700 mb-1">5. ¿Se verificó el voltaje de entrada del contactor?</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-1">
+                        <input type="number" id="jockey_lecturaL12ContactorEntrada" name="jockey_lecturaL12ContactorEntrada" placeholder="L1,2=">
+                        <input type="number" id="jockey_lecturaL23ContactorEntrada" name="jockey_lecturaL23ContactorEntrada" placeholder="L2,3=">
+                        <input type="number" id="jockey_lecturaL13ContactorEntrada" name="jockey_lecturaL13ContactorEntrada" placeholder="L1,3=">
+                    </div>
+                    <label for="jockey_comentariosVoltajeEntradaContactor" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="jockey_comentariosVoltajeEntradaContactor" name="jockey_comentariosVoltajeEntradaContactor" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 6: Voltaje de Salida del Contactor Verificado -->
+                <div class="mb-4">
+                    <label for="jockey_voltajeSalidaContactor" class="block text-sm font-medium text-gray-700 mb-1">6. ¿Se verificó el voltaje de salida del contactor?</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-1">
+                        <input type="number" id="jockey_lecturaL12ContactorSalida" name="jockey_lecturaL12ContactorSalida" placeholder="L1,2=">
+                        <input type="number" id="jockey_lecturaL23ContactorSalida" name="jockey_lecturaL23ContactorSalida" placeholder="L2,3=">
+                        <input type="number" id="jockey_lecturaL13ContactorSalida" name="jockey_lecturaL13ContactorSalida" placeholder="L1,3=">
+                    </div>
+                    <label for="jockey_comentariosVoltajeSalidaContactor" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="jockey_comentariosVoltajeSalidaContactor" name="jockey_comentariosVoltajeSalidaContactor" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 7: Corriente de Tablero Verificada -->
+                <div class="mb-4">
+                    <label for="jockey_corrienteTablero" class="block text-sm font-medium text-gray-700 mb-1">7. ¿Se verificó la corriente de tablero?</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-1">
+                        <input type="number" id="jockey_lecturaI1" name="jockey_lecturaI1" placeholder="I1.=">
+                        <input type="number" id="jockey_lecturaI2" name="jockey_lecturaI2" placeholder="I2=">
+                        <input type="number" id="jockey_lecturaI3" name="jockey_lecturaI3" placeholder="I3=">
+                    </div>
+                    <label for="jockey_comentariosCorrienteTablero" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="jockey_comentariosCorrienteTablero" name="jockey_comentariosCorrienteTablero" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 8: Presión de Manómetro de Descarga -->
+                <div class="mb-4">
+                    <label for="jockey_presionManometroDescarga" class="block text-sm font-medium text-gray-700 mb-1">8. Presión de manómetro de descarga:</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="jockey_lecturaPresionManometroDescarga" name="jockey_lecturaPresionManometroDescarga" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">PSI</span>
+                    </div>
+                    <label for="jockey_comentariosPresionManometroDescarga" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="jockey_comentariosPresionManometroDescarga" name="jockey_comentariosPresionManometroDescarga" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 9: Parámetros del Switch de Presión -->
+                <div class="mb-4">
+                    <label for="jockey_parametrosSwitchPresion" class="block text-sm font-medium text-gray-700 mb-1">9. Parámetros del Switch de Presión:</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="text" id="jockey_lecturaParametrosSwitchPresion" name="jockey_lecturaParametrosSwitchPresion" placeholder="/ PSI" class="w-1/2">
+                        <span class="text-gray-600">/ PSI</span>
+                    </div>
+                    <label for="jockey_comentariosParametrosSwitchPresion" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="jockey_comentariosParametrosSwitchPresion" name="jockey_comentariosParametrosSwitchPresion" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 10: Presión de Arranque Verificada -->
+                <div class="mb-4">
+                    <label for="jockey_presionArranque" class="block text-sm font-medium text-gray-700 mb-1">10. ¿Se verificó la presión de arranque?</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="jockey_lecturaPresionArranque" name="jockey_lecturaPresionArranque" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">PSI</span>
+                    </div>
+                    <label for="jockey_comentariosPresionArranque" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="jockey_comentariosPresionArranque" name="jockey_comentariosPresionArranque" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+
+                <!-- Pregunta 11: Presión de Paro Verificada -->
+                <div class="mb-4">
+                    <label for="jockey_presionParo" class="block text-sm font-medium text-gray-700 mb-1">11. ¿Se verificó la presión de paro?</label>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <input type="number" id="jockey_lecturaPresionParo" name="jockey_lecturaPresionParo" placeholder="Lectura" class="w-1/2">
+                        <span class="text-gray-600">PSI</span>
+                    </div>
+                    <label for="jockey_comentariosPresionParo" class="block text-sm font-medium text-gray-700 mt-2 mb-1">Comentarios:</label>
+                    <textarea id="jockey_comentariosPresionParo" name="jockey_comentariosPresionParo" rows="2" class="mt-1 block w-full"></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full btn">Enviar Reporte</button>
+        </form>
+
+        <!-- Área para mostrar los reportes enviados -->
+        <div class="mt-8 bg-blue-50 p-6 rounded-lg shadow-inner">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4 section-title">Reportes Enviados</h2>
+            <div id="reportsList" class="space-y-4">
+                <p class="text-gray-500 text-center" id="noReportsMessage">No hay reportes enviados aún.</p>
+            </div>
+            <button id="exportPdfBtn" class="w-full mt-4 btn">Exportar a PDF</button>
+        </div>
+    </div>
+
+    <script>
+        // Función para manejar el envío del formulario
+        document.getElementById('reportForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Previene el envío por defecto del formulario
+
+            // Obtiene los valores del formulario
+            const planta = document.getElementById('planta').value;
+            const fecha = document.getElementById('fecha').value;
+
+            // --- Datos de Bomba Diesel ---
+            const diesel_tableroAutomatico = document.getElementById('diesel_tableroAutomatico').value;
+            const diesel_comentariosTablero = document.getElementById('diesel_comentariosTablero').value;
+            const diesel_valvulaSuccionAbierta = document.getElementById('diesel_valvulaSuccionAbierta').value;
+            const diesel_comentariosValvulaSuccion = document.getElementById('diesel_comentariosValvulaSuccion').value;
+            const diesel_valvulaDescargaAbierta = document.getElementById('diesel_valvulaDescargaAbierta').value;
+            const diesel_comentariosValvulaDescarga = document.getElementById('diesel_comentariosValvulaDescarga').value;
+            const diesel_lecturaTableroEnergizado = document.getElementById('diesel_lecturaTableroEnergizado').value;
+            const diesel_comentariosTableroEnergizado = document.getElementById('diesel_comentariosTableroEnergizado').value;
+            const diesel_nivelAceite = document.getElementById('diesel_nivelAceite').value;
+            const diesel_comentariosNivelAceite = document.getElementById('diesel_comentariosNivelAceite').value;
+            const diesel_nivelAgua = document.getElementById('diesel_nivelAgua').value;
+            const diesel_comentariosNivelAgua = document.getElementById('diesel_comentariosNivelAgua').value;
+            const diesel_tanqueDiesel = document.getElementById('diesel_tanqueDiesel').value;
+            const diesel_comentariosTanqueDiesel = document.getElementById('diesel_comentariosTanqueDiesel').value;
+            const diesel_nivelCisterna = document.getElementById('diesel_nivelCisterna').value;
+            const diesel_comentariosNivelCisterna = document.getElementById('diesel_comentariosNivelCisterna').value;
+            const diesel_lecturaBanco1Cargado = document.getElementById('diesel_lecturaBanco1Cargado').value;
+            const diesel_comentariosBanco1Cargado = document.getElementById('diesel_comentariosBanco1Cargado').value;
+            const diesel_lecturaBanco2Cargado = document.getElementById('diesel_lecturaBanco2Cargado').value;
+            const diesel_comentariosBanco2Cargado = document.getElementById('diesel_comentariosBanco2Cargado').value;
+            const diesel_lecturaCargador1Operando = document.getElementById('diesel_lecturaCargador1Operando').value;
+            const diesel_comentariosCargador1Operando = document.getElementById('diesel_comentariosCargador1Operando').value;
+            const diesel_lecturaCargador2Operando = document.getElementById('diesel_lecturaCargador2Operando').value;
+            const diesel_comentariosCargador2Operando = document.getElementById('diesel_comentariosCargador2Operando').value;
+            const diesel_nivelAguaBaterias = document.getElementById('diesel_nivelAguaBaterias').value;
+            const diesel_comentariosNivelAguaBaterias = document.getElementById('diesel_comentariosNivelAguaBaterias').value;
+            const diesel_bornesBateriasApretados = document.getElementById('diesel_bornesBateriasApretados').value;
+            const diesel_comentariosBornesBaterias = document.getElementById('diesel_comentariosBornesBaterias').value;
+            const diesel_lecturaSwitchPresionManual = document.getElementById('diesel_lecturaSwitchPresionManual').value;
+            const diesel_lecturaPresionArranque = document.getElementById('diesel_lecturaPresionArranque').value;
+            const diesel_lecturaPresionParoManual = document.getElementById('diesel_lecturaPresionParoManual').value;
+            const diesel_comentariosSwitchPresion = document.getElementById('diesel_comentariosSwitchPresion').value;
+            const diesel_lecturaTemperaturaAguaMotor = document.getElementById('diesel_lecturaTemperaturaAguaMotor').value;
+            const diesel_comentariosTemperaturaAguaMotor = document.getElementById('diesel_comentariosTemperaturaAguaMotor').value;
+            const diesel_precalentadorOpera = document.getElementById('diesel_precalentadorOpera').value;
+            const diesel_comentariosPrecalentador = document.getElementById('diesel_comentariosPrecalentador').value;
+            const diesel_lecturaPresionAceite = document.getElementById('diesel_lecturaPresionAceite').value;
+            const diesel_comentariosPresionAceite = document.getElementById('diesel_comentariosPresionAceite').value;
+            const diesel_lecturaManometroSuccion = document.getElementById('diesel_lecturaManometroSuccion').value;
+            const diesel_comentariosManometroSuccion = document.getElementById('diesel_comentariosManometroSuccion').value;
+            const diesel_lecturaManometroLineaEnfriamiento = document.getElementById('diesel_lecturaManometroLineaEnfriamiento').value;
+            const diesel_comentariosManometroLineaEnfriamiento = document.getElementById('diesel_comentariosManometroLineaEnfriamiento').value;
+            const diesel_lecturaManometroDescarga = document.getElementById('diesel_lecturaManometroDescarga').value;
+            const diesel_comentariosManometroDescarga = document.getElementById('diesel_comentariosManometroDescarga').value;
+            const diesel_lecturaVelocidadBomba = document.getElementById('diesel_lecturaVelocidadBomba').value;
+            const diesel_comentariosVelocidadBomba = document.getElementById('diesel_comentariosVelocidadBomba').value;
+            const diesel_lecturaHorasTrabajadasMotor = document.getElementById('diesel_lecturaHorasTrabajadasMotor').value;
+            const diesel_comentariosHorasTrabajadasMotor = document.getElementById('diesel_comentariosHorasTrabajadasMotor').value;
+            const diesel_cranksTableroPrincipal = document.getElementById('diesel_cranksTableroPrincipal').value;
+            const diesel_comentariosCranksTableroPrincipal = document.getElementById('diesel_comentariosCranksTableroPrincipal').value;
+            const diesel_cranksTableroMotor = document.getElementById('diesel_cranksTableroMotor').value;
+            const diesel_comentariosCranksTableroMotor = document.getElementById('diesel_comentariosCranksTableroMotor').value;
+            const diesel_arrancadoresMotor = document.getElementById('diesel_arrancadoresMotor').value;
+            const diesel_comentariosArrancadoresMotor = document.getElementById('diesel_comentariosArrancadoresMotor').value;
+            const diesel_lecturaTemperaturaMotorOperacion = document.getElementById('diesel_lecturaTemperaturaMotorOperacion').value;
+            const diesel_comentariosTemperaturaMotorOperacion = document.getElementById('diesel_comentariosTemperaturaMotorOperacion').value;
+            const diesel_calentamientoEstoperos = document.getElementById('diesel_calentamientoEstoperos').value;
+            const diesel_comentariosCalentamientoEstoperos = document.getElementById('diesel_comentariosCalentamientoEstoperos').value;
+            const diesel_calentamientoBaleros = document.getElementById('diesel_calentamientoBaleros').value;
+            const diesel_comentariosCalentamientoBaleros = document.getElementById('diesel_comentariosCalentamientoBaleros').value;
+            const diesel_ruidosAnormales = document.getElementById('diesel_ruidosAnormales').value;
+            const diesel_comentariosRuidosAnormales = document.getElementById('diesel_comentariosRuidosAnormales').value;
+            const diesel_selectorAutomatico = document.getElementById('diesel_selectorAutomatico').value;
+            const diesel_comentariosSelectorAutomatico = document.getElementById('diesel_comentariosSelectorAutomatico').value;
+
+            // --- Datos de Bomba Eléctrica ---
+            const electrica_tableroAutomatico = document.getElementById('electrica_tableroAutomatico').value;
+            const electrica_comentariosTablero = document.getElementById('electrica_comentariosTablero').value;
+            const electrica_valvulasAbiertasAseguradas = document.getElementById('electrica_valvulasAbiertasAseguradas').value;
+            const electrica_comentariosValvulas = document.getElementById('electrica_comentariosValvulas').value;
+            const electrica_lecturaL12Entrada = document.getElementById('electrica_lecturaL12Entrada').value;
+            const electrica_lecturaL23Entrada = document.getElementById('electrica_lecturaL23Entrada').value;
+            const electrica_lecturaL13Entrada = document.getElementById('electrica_lecturaL13Entrada').value;
+            const electrica_comentariosVoltajeEntradaPpal = document.getElementById('electrica_comentariosVoltajeEntradaPpal').value;
+            const electrica_lecturaL12Salida = document.getElementById('electrica_lecturaL12Salida').value;
+            const electrica_lecturaL23Salida = document.getElementById('electrica_lecturaL23Salida').value;
+            const electrica_lecturaL13Salida = document.getElementById('electrica_lecturaL13Salida').value;
+            const electrica_comentariosVoltajeSalidaPpal = document.getElementById('electrica_comentariosVoltajeSalidaPpal').value;
+            const electrica_lecturaL12ContactorEntrada = document.getElementById('electrica_lecturaL12ContactorEntrada').value;
+            const electrica_lecturaL23ContactorEntrada = document.getElementById('electrica_lecturaL23ContactorEntrada').value;
+            const electrica_lecturaL13ContactorEntrada = document.getElementById('electrica_lecturaL13ContactorEntrada').value;
+            const electrica_comentariosVoltajeEntradaContactor = document.getElementById('electrica_comentariosVoltajeEntradaContactor').value;
+            const electrica_lecturaL12ContactorSalida = document.getElementById('electrica_lecturaL12ContactorSalida').value;
+            const electrica_lecturaL23ContactorSalida = document.getElementById('electrica_lecturaL23ContactorSalida').value;
+            const electrica_lecturaL13ContactorSalida = document.getElementById('electrica_lecturaL13ContactorSalida').value;
+            const electrica_comentariosVoltajeSalidaContactor = document.getElementById('electrica_comentariosVoltajeSalidaContactor').value;
+            const electrica_lecturaI1 = document.getElementById('electrica_lecturaI1').value;
+            const electrica_lecturaI2 = document.getElementById('electrica_lecturaI2').value;
+            const electrica_lecturaI3 = document.getElementById('electrica_lecturaI3').value;
+            const electrica_comentariosCorrienteTablero = document.getElementById('electrica_comentariosCorrienteTablero').value;
+            const electrica_manometroDescargaOperando = document.getElementById('electrica_manometroDescargaOperando').value;
+            const electrica_lecturaManometroDescarga = document.getElementById('electrica_lecturaManometroDescarga').value;
+            const electrica_comentariosManometroDescarga = document.getElementById('electrica_comentariosManometroDescarga').value;
+            const electrica_lecturaParametrosSwitchPresion = document.getElementById('electrica_lecturaParametrosSwitchPresion').value;
+            const electrica_comentariosParametrosSwitchPresion = document.getElementById('electrica_comentariosParametrosSwitchPresion').value;
+            const electrica_lecturaPresionArranque = document.getElementById('electrica_lecturaPresionArranque').value;
+            const electrica_comentariosPresionArranque = document.getElementById('electrica_comentariosPresionArranque').value;
+            const electrica_lecturaPresionParo = document.getElementById('electrica_lecturaPresionParo').value;
+            const electrica_comentariosPresionParo = document.getElementById('electrica_comentariosPresionParo').value;
+
+            // --- Datos de Bomba Jockey ---
+            const jockey_tableroAutomatico = document.getElementById('jockey_tableroAutomatico').value;
+            const jockey_comentariosTablero = document.getElementById('jockey_comentariosTablero').value;
+            const jockey_valvulasAbiertasAseguradas = document.getElementById('jockey_valvulasAbiertasAseguradas').value;
+            const jockey_comentariosValvulas = document.getElementById('jockey_comentariosValvulas').value;
+            const jockey_lecturaL12Entrada = document.getElementById('jockey_lecturaL12Entrada').value;
+            const jockey_lecturaL23Entrada = document.getElementById('jockey_lecturaL23Entrada').value;
+            const jockey_lecturaL13Entrada = document.getElementById('jockey_lecturaL13Entrada').value;
+            const jockey_comentariosVoltajeEntradaPpal = document.getElementById('jockey_comentariosVoltajeEntradaPpal').value;
+            const jockey_lecturaL12Salida = document.getElementById('jockey_lecturaL12Salida').value;
+            const jockey_lecturaL23Salida = document.getElementById('jockey_lecturaL23Salida').value;
+            const jockey_lecturaL13Salida = document.getElementById('jockey_lecturaL13Salida').value;
+            const jockey_comentariosVoltajeSalidaPpal = document.getElementById('jockey_comentariosVoltajeSalidaPpal').value;
+            const jockey_lecturaL12ContactorEntrada = document.getElementById('jockey_lecturaL12ContactorEntrada').value;
+            const jockey_lecturaL23ContactorEntrada = document.getElementById('jockey_lecturaL23ContactorEntrada').value;
+            const jockey_lecturaL13ContactorEntrada = document.getElementById('jockey_lecturaL13ContactorEntrada').value;
+            const jockey_comentariosVoltajeEntradaContactor = document.getElementById('jockey_comentariosVoltajeEntradaContactor').value;
+            const jockey_lecturaL12ContactorSalida = document.getElementById('jockey_lecturaL12ContactorSalida').value;
+            const jockey_lecturaL23ContactorSalida = document.getElementById('jockey_lecturaL23ContactorSalida').value;
+            const jockey_lecturaL13ContactorSalida = document.getElementById('jockey_lecturaL13ContactorSalida').value;
+            const jockey_comentariosVoltajeSalidaContactor = document.getElementById('jockey_comentariosVoltajeSalidaContactor').value;
+            const jockey_lecturaI1 = document.getElementById('jockey_lecturaI1').value;
+            const jockey_lecturaI2 = document.getElementById('jockey_lecturaI2').value;
+            const jockey_lecturaI3 = document.getElementById('jockey_lecturaI3').value;
+            const jockey_comentariosCorrienteTablero = document.getElementById('jockey_comentariosCorrienteTablero').value;
+            const jockey_lecturaPresionManometroDescarga = document.getElementById('jockey_lecturaPresionManometroDescarga').value;
+            const jockey_comentariosPresionManometroDescarga = document.getElementById('jockey_comentariosPresionManometroDescarga').value;
+            const jockey_lecturaParametrosSwitchPresion = document.getElementById('jockey_lecturaParametrosSwitchPresion').value;
+            const jockey_comentariosParametrosSwitchPresion = document.getElementById('jockey_comentariosParametrosSwitchPresion').value;
+            const jockey_lecturaPresionArranque = document.getElementById('jockey_lecturaPresionArranque').value;
+            const jockey_comentariosPresionArranque = document.getElementById('jockey_comentariosPresionArranque').value;
+            const jockey_lecturaPresionParo = document.getElementById('jockey_lecturaPresionParo').value;
+            const jockey_comentariosPresionParo = document.getElementById('jockey_comentariosPresionParo').value;
+
+
+            // Crea un objeto con los datos del reporte
+            const reportData = {
+                planta: planta,
+                fecha: fecha,
+                diesel: {
+                    tableroAutomatico: diesel_tableroAutomatico || 'N/A',
+                    comentariosTablero: diesel_comentariosTablero || 'N/A',
+                    valvulaSuccionAbierta: diesel_valvulaSuccionAbierta || 'N/A',
+                    comentariosValvulaSuccion: diesel_comentariosValvulaSuccion || 'N/A',
+                    valvulaDescargaAbierta: diesel_valvulaDescargaAbierta || 'N/A',
+                    comentariosValvulaDescarga: diesel_comentariosValvulaDescarga || 'N/A',
+                    tableroEnergizado: diesel_lecturaTableroEnergizado ? `${diesel_lecturaTableroEnergizado} VAC` : 'N/A',
+                    comentariosTableroEnergizado: diesel_comentariosTableroEnergizado || 'N/A',
+                    nivelAceite: diesel_nivelAceite || 'N/A',
+                    comentariosNivelAceite: diesel_comentariosNivelAceite || 'N/A',
+                    nivelAgua: diesel_nivelAgua || 'N/A',
+                    comentariosNivelAgua: diesel_comentariosNivelAgua || 'N/A',
+                    tanqueDiesel: diesel_tanqueDiesel || 'N/A',
+                    comentariosTanqueDiesel: diesel_comentariosTanqueDiesel || 'N/A',
+                    nivelCisterna: diesel_nivelCisterna || 'N/A',
+                    comentariosNivelCisterna: diesel_comentariosNivelCisterna || 'N/A',
+                    banco1Cargado: diesel_lecturaBanco1Cargado ? `${diesel_lecturaBanco1Cargado} VDC` : 'N/A',
+                    comentariosBanco1Cargado: diesel_comentariosBanco1Cargado || 'N/A',
+                    banco2Cargado: diesel_lecturaBanco2Cargado ? `${diesel_lecturaBanco2Cargado} VDC` : 'N/A',
+                    comentariosBanco2Cargado: diesel_comentariosBanco2Cargado || 'N/A',
+                    cargador1Operando: diesel_lecturaCargador1Operando ? `${diesel_lecturaCargador1Operando} VDC` : 'N/A',
+                    comentariosCargador1Operando: diesel_comentariosCargador1Operando || 'N/A',
+                    cargador2Operando: diesel_lecturaCargador2Operando ? `${diesel_lecturaCargador2Operando} VDC` : 'N/A',
+                    comentariosCargador2Operando: diesel_comentariosCargador2Operando || 'N/A',
+                    nivelAguaBaterias: diesel_nivelAguaBaterias || 'N/A',
+                    comentariosNivelAguaBaterias: diesel_comentariosNivelAguaBaterias || 'N/A',
+                    bornesBateriasApretados: diesel_bornesBateriasApretados || 'N/A',
+                    comentariosBornesBaterias: diesel_comentariosBornesBaterias || 'N/A',
+                    parametrosSwitchPresion: {
+                        manual: diesel_lecturaSwitchPresionManual || 'N/A',
+                        presionArranque: diesel_lecturaPresionArranque ? `${diesel_lecturaPresionArranque} PSI` : 'N/A',
+                        presionParo: diesel_lecturaPresionParoManual || 'N/A',
+                    },
+                    comentariosSwitchPresion: diesel_comentariosSwitchPresion || 'N/A',
+                    temperaturaAguaMotor: diesel_lecturaTemperaturaAguaMotor ? `${diesel_lecturaTemperaturaAguaMotor} ° C` : 'N/A',
+                    comentariosTemperaturaAguaMotor: diesel_comentariosTemperaturaAguaMotor || 'N/A',
+                    precalentadorOpera: diesel_precalentadorOpera || 'N/A',
+                    comentariosPrecalentador: diesel_comentariosPrecalentador || 'N/A',
+                    presionAceite: diesel_lecturaPresionAceite ? `${diesel_lecturaPresionAceite} PSI` : 'N/A',
+                    comentariosPresionAceite: diesel_comentariosPresionAceite || 'N/A',
+                    manometroSuccion: diesel_lecturaManometroSuccion ? `${diesel_lecturaManometroSuccion} PSI` : 'N/A',
+                    comentariosManometroSuccion: diesel_comentariosManometroSuccion || 'N/A',
+                    manometroLineaEnfriamiento: diesel_lecturaManometroLineaEnfriamiento ? `${diesel_lecturaManometroLineaEnfriamiento} PSI` : 'N/A',
+                    comentariosManometroLineaEnfriamiento: diesel_comentariosManometroLineaEnfriamiento || 'N/A',
+                    manometroDescarga: diesel_lecturaManometroDescarga ? `${diesel_lecturaManometroDescarga} PSI` : 'N/A',
+                    comentariosManometroDescarga: diesel_comentariosManometroDescarga || 'N/A',
+                    velocidadBomba: diesel_lecturaVelocidadBomba ? `${diesel_lecturaVelocidadBomba} RPM` : 'N/A',
+                    comentariosVelocidadBomba: diesel_comentariosVelocidadBomba || 'N/A',
+                    horasTrabajadasMotor: diesel_lecturaHorasTrabajadasMotor ? `${diesel_lecturaHorasTrabajadasMotor} HRS` : 'N/A',
+                    comentariosHorasTrabajadasMotor: diesel_comentariosHorasTrabajadasMotor || 'N/A',
+                    cranksTableroPrincipal: diesel_cranksTableroPrincipal || 'N/A',
+                    comentariosCranksTableroPrincipal: diesel_comentariosCranksTableroPrincipal || 'N/A',
+                    cranksTableroMotor: diesel_cranksTableroMotor || 'N/A',
+                    comentariosCranksTableroMotor: diesel_comentariosCranksTableroMotor || 'N/A',
+                    arrancadoresMotor: diesel_arrancadoresMotor || 'N/A',
+                    comentariosArrancadoresMotor: diesel_comentariosArrancadoresMotor || 'N/A',
+                    temperaturaMotorOperacion: diesel_lecturaTemperaturaMotorOperacion ? `${diesel_lecturaTemperaturaMotorOperacion} ° C` : 'N/A',
+                    comentariosTemperaturaMotorOperacion: diesel_comentariosTemperaturaMotorOperacion || 'N/A',
+                    calentamientoEstoperos: diesel_calentamientoEstoperos || 'N/A',
+                    comentariosCalentamientoEstoperos: diesel_comentariosCalentamientoEstoperos || 'N/A',
+                    calentamientoBaleros: diesel_calentamientoBaleros || 'N/A',
+                    comentariosCalentamientoBaleros: diesel_comentariosCalentamientoBaleros || 'N/A',
+                    ruidosAnormales: diesel_ruidosAnormales || 'N/A',
+                    comentariosRuidosAnormales: diesel_comentariosRuidosAnormales || 'N/A',
+                    selectorAutomatico: diesel_selectorAutomatico || 'N/A',
+                    comentariosSelectorAutomatico: diesel_comentariosSelectorAutomatico || 'N/A',
+                },
+                electrica: {
+                    tableroAutomatico: electrica_tableroAutomatico || 'N/A',
+                    comentariosTablero: electrica_comentariosTablero || 'N/A',
+                    valvulasAbiertasAseguradas: electrica_valvulasAbiertasAseguradas || 'N/A',
+                    comentariosValvulas: electrica_comentariosValvulas || 'N/A',
+                    voltajeEntradaPpal: {
+                        l12: electrica_lecturaL12Entrada || 'N/A',
+                        l23: electrica_lecturaL23Entrada || 'N/A',
+                        l13: electrica_lecturaL13Entrada || 'N/A',
+                    },
+                    comentariosVoltajeEntradaPpal: electrica_comentariosVoltajeEntradaPpal || 'N/A',
+                    voltajeSalidaPpal: {
+                        l12: electrica_lecturaL12Salida || 'N/A',
+                        l23: electrica_lecturaL23Salida || 'N/A',
+                        l13: electrica_lecturaL13Salida || 'N/A',
+                    },
+                    comentariosVoltajeSalidaPpal: electrica_comentariosVoltajeSalidaPpal || 'N/A',
+                    voltajeEntradaContactor: {
+                        l12: electrica_lecturaL12ContactorEntrada || 'N/A',
+                        l23: electrica_lecturaL23ContactorEntrada || 'N/A',
+                        l13: electrica_lecturaL13ContactorEntrada || 'N/A',
+                    },
+                    comentariosVoltajeEntradaContactor: electrica_comentariosVoltajeEntradaContactor || 'N/A',
+                    voltajeSalidaContactor: {
+                        l12: electrica_lecturaL12ContactorSalida || 'N/A',
+                        l23: electrica_lecturaL23ContactorSalida || 'N/A',
+                        l13: electrica_lecturaL13ContactorSalida || 'N/A',
+                    },
+                    comentariosVoltajeSalidaContactor: electrica_comentariosVoltajeSalidaContactor || 'N/A',
+                    corrienteTablero: {
+                        i1: electrica_lecturaI1 || 'N/A',
+                        i2: electrica_lecturaI2 || 'N/A',
+                        i3: electrica_lecturaI3 || 'N/A',
+                    },
+                    comentariosCorrienteTablero: electrica_comentariosCorrienteTablero || 'N/A',
+                    manometroDescargaOperando: electrica_manometroDescargaOperando || 'N/A',
+                    lecturaManometroDescarga: electrica_lecturaManometroDescarga ? `${electrica_lecturaManometroDescarga} PSI` : 'N/A',
+                    comentariosManometroDescarga: electrica_comentariosManometroDescarga || 'N/A',
+                    parametrosSwitchPresion: electrica_lecturaParametrosSwitchPresion ? `${electrica_lecturaParametrosSwitchPresion} PSI` : 'N/A',
+                    comentariosParametrosSwitchPresion: electrica_comentariosParametrosSwitchPresion || 'N/A',
+                    presionArranque: electrica_lecturaPresionArranque ? `${electrica_lecturaPresionArranque} PSI` : 'N/A',
+                    comentariosPresionArranque: electrica_comentariosPresionArranque || 'N/A',
+                    presionParo: electrica_lecturaPresionParo ? `${electrica_lecturaPresionParo} PSI` : 'N/A',
+                    comentariosPresionParo: electrica_comentariosPresionParo || 'N/A',
+                },
+                jockey: {
+                    tableroAutomatico: jockey_tableroAutomatico || 'N/A',
+                    comentariosTablero: jockey_comentariosTablero || 'N/A',
+                    valvulasAbiertasAseguradas: jockey_valvulasAbiertasAseguradas || 'N/A',
+                    comentariosValvulas: jockey_comentariosValvulas || 'N/A',
+                    voltajeEntradaPpal: {
+                        l12: jockey_lecturaL12Entrada || 'N/A',
+                        l23: jockey_lecturaL23Entrada || 'N/A',
+                        l13: jockey_lecturaL13Entrada || 'N/A',
+                    },
+                    comentariosVoltajeEntradaPpal: jockey_comentariosVoltajeEntradaPpal || 'N/A',
+                    voltajeSalidaPpal: {
+                        l12: jockey_lecturaL12Salida || 'N/A',
+                        l23: jockey_lecturaL23Salida || 'N/A',
+                        l13: jockey_lecturaL13Salida || 'N/A',
+                    },
+                    comentariosVoltajeSalidaPpal: jockey_comentariosVoltajeSalidaPpal || 'N/A',
+                    voltajeEntradaContactor: {
+                        l12: jockey_lecturaL12ContactorEntrada || 'N/A',
+                        l23: jockey_lecturaL23ContactorEntrada || 'N/A',
+                        l13: jockey_lecturaL13ContactorEntrada || 'N/A',
+                    },
+                    comentariosVoltajeEntradaContactor: jockey_comentariosVoltajeEntradaContactor || 'N/A',
+                    voltajeSalidaContactor: {
+                        l12: jockey_lecturaL12ContactorSalida || 'N/A',
+                        l23: jockey_lecturaL23ContactorSalida || 'N/A',
+                        l13: jockey_lecturaL13ContactorSalida || 'N/A',
+                    },
+                    comentariosVoltajeSalidaContactor: jockey_comentariosVoltajeSalidaContactor || 'N/A',
+                    corrienteTablero: {
+                        i1: jockey_lecturaI1 || 'N/A',
+                        i2: jockey_lecturaI2 || 'N/A',
+                        i3: jockey_lecturaI3 || 'N/A',
+                    },
+                    comentariosCorrienteTablero: jockey_comentariosCorrienteTablero || 'N/A',
+                    presionManometroDescarga: jockey_lecturaPresionManometroDescarga ? `${jockey_lecturaPresionManometroDescarga} PSI` : 'N/A',
+                    comentariosPresionManometroDescarga: jockey_comentariosPresionManometroDescarga || 'N/A',
+                    parametrosSwitchPresion: jockey_lecturaParametrosSwitchPresion || 'N/A',
+                    comentariosParametrosSwitchPresion: jockey_comentariosParametrosSwitchPresion || 'N/A',
+                    presionArranque: jockey_lecturaPresionArranque ? `${jockey_lecturaPresionArranque} PSI` : 'N/A',
+                    comentariosPresionArranque: jockey_comentariosPresionArranque || 'N/A',
+                    presionParo: jockey_lecturaPresionParo ? `${jockey_lecturaPresionParo} PSI` : 'N/A',
+                    comentariosPresionParo: jockey_comentariosPresionParo || 'N/A',
+                },
+                timestamp: new Date().toLocaleString() // Marca de tiempo del envío
+            };
+
+            // Muestra el reporte en la lista
+            displayReport(reportData);
+
+            // Limpia el formulario después del envío (opcional)
+            this.reset();
+            // Restablece todos los select a la opción por defecto
+            document.querySelectorAll('select').forEach(select => select.value = '');
+        });
+
+        // Función para mostrar un reporte en la lista
+        function displayReport(report) {
+            const reportsList = document.getElementById('reportsList');
+            const noReportsMessage = document.getElementById('noReportsMessage');
+
+            // Elimina el mensaje "No hay reportes" si existe
+            if (noReportsMessage) {
+                noReportsMessage.remove();
+            }
+
+            // Crea un nuevo elemento div para el reporte
+            const reportItem = document.createElement('div');
+            reportItem.classList.add('report-item', 'p-4', 'rounded-lg', 'shadow-sm', 'border', 'border-gray-200');
+
+            // Contenido del reporte
+            reportItem.innerHTML = `
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Reporte de ${report.planta} - ${report.fecha}</h3>
+                <p class="text-sm text-gray-600 mb-3">Enviado el: ${report.timestamp}</p>
+
+                <!-- Sección de Bomba Diesel en el Reporte -->
+                <h4 class="text-xl font-semibold text-gray-700 mt-4 mb-3">Bomba Diesel</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm text-gray-700">
+                    <div><strong>1. Tablero en Automático:</strong> ${report.diesel.tableroAutomatico}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosTablero}</div>
+                    <div><strong>2. Válvula de Succión Abierta:</strong> ${report.diesel.valvulaSuccionAbierta}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosValvulaSuccion}</div>
+                    <div><strong>3. Válvula de Descarga Abierta:</strong> ${report.diesel.valvulaDescargaAbierta}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosValvulaDescarga}</div>
+                    <div><strong>4. Tablero Energizado:</strong> ${report.diesel.tableroEnergizado}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosTableroEnergizado}</div>
+                    <div><strong>5. Nivel de Aceite:</strong> ${report.diesel.nivelAceite}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosNivelAceite}</div>
+                    <div><strong>6. Nivel del Agua:</strong> ${report.diesel.nivelAgua}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosNivelAgua}</div>
+                    <div><strong>7. Tanque Diesel > 3/4:</strong> ${report.diesel.tanqueDiesel}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosTanqueDiesel}</div>
+                    <div><strong>8. Nivel Cisterna Adecuado:</strong> ${report.diesel.nivelCisterna}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosNivelCisterna}</div>
+                    <div><strong>9. Banco 1 Cargado:</strong> ${report.diesel.banco1Cargado}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosBanco1Cargado}</div>
+                    <div><strong>10. Banco 2 Cargado:</strong> ${report.diesel.banco2Cargado}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosBanco2Cargado}</div>
+                    <div><strong>11. Cargador 1 Operando:</strong> ${report.diesel.cargador1Operando}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosCargador1Operando}</div>
+                    <div><strong>12. Cargador 2 Operando:</strong> ${report.diesel.cargador2Operando}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosCargador2Operando}</div>
+                    <div><strong>13. Nivel Agua Baterías:</strong> ${report.diesel.nivelAguaBaterias}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosNivelAguaBaterias}</div>
+                    <div><strong>14. Bornes Baterías Apretados:</strong> ${report.diesel.bornesBateriasApretados}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosBornesBaterias}</div>
+                    <div class="col-span-2">
+                        <strong>15. Parámetros Switch Presión:</strong>
+                        <ul class="list-disc list-inside ml-4">
+                            <li>Manual: ${report.diesel.parametrosSwitchPresion.manual}</li>
+                            <li>Presión Arranque: ${report.diesel.parametrosSwitchPresion.presionArranque}</li>
+                            <li>Presión Paro: ${report.diesel.parametrosSwitchPresion.presionParo}</li>
+                        </ul>
+                    </div>
+                    <div class="col-span-2"><strong>Comentarios Switch Presión:</strong> ${report.diesel.comentariosSwitchPresion}</div>
+                    <div><strong>16. Temp. Agua Motor (arranque):</strong> ${report.diesel.temperaturaAguaMotor}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosTemperaturaAguaMotor}</div>
+                    <div><strong>17. Precalentador Opera:</strong> ${report.diesel.precalentadorOpera}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosPrecalentador}</div>
+                    <div><strong>18. Presión Aceite:</strong> ${report.diesel.presionAceite}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosPresionAceite}</div>
+                    <div><strong>19. Manómetro Succión Opera:</strong> ${report.diesel.manometroSuccion}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosManometroSuccion}</div>
+                    <div><strong>20. Manómetro Línea Enfriamiento Opera:</strong> ${report.diesel.manometroLineaEnfriamiento}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosManometroLineaEnfriamiento}</div>
+                    <div><strong>21. Manómetro Descarga Opera:</strong> ${report.diesel.manometroDescarga}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosManometroDescarga}</div>
+                    <div><strong>22. Velocidad Bomba:</strong> ${report.diesel.velocidadBomba}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosVelocidadBomba}</div>
+                    <div><strong>23. Horas Trabajadas Motor:</strong> ${report.diesel.horasTrabajadasMotor}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosHorasTrabajadasMotor}</div>
+                    <div><strong>24. Cranks Tablero Principal Operaron:</strong> ${report.diesel.cranksTableroPrincipal}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosCranksTableroPrincipal}</div>
+                    <div><strong>25. Cranks Tablero Motor Operaron:</strong> ${report.diesel.cranksTableroMotor}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosCranksTableroMotor}</div>
+                    <div><strong>26. Arrancadores Motor Operaron:</strong> ${report.diesel.arrancadoresMotor}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosArrancadoresMotor}</div>
+                    <div><strong>27. Temp. Motor Operación:</strong> ${report.diesel.temperaturaMotorOperacion}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosTemperaturaMotorOperacion}</div>
+                    <div><strong>28. Calentamiento Estoperos:</strong> ${report.diesel.calentamientoEstoperos}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosCalentamientoEstoperos}</div>
+                    <div><strong>29. Calentamiento Baleros:</strong> ${report.diesel.calentamientoBaleros}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosCalentamientoBaleros}</div>
+                    <div><strong>30. Ruidos Anormales:</strong> ${report.diesel.ruidosAnormales}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosRuidosAnormales}</div>
+                    <div><strong>31. Selector en Automático:</strong> ${report.diesel.selectorAutomatico}</div>
+                    <div><strong>Comentarios:</strong> ${report.diesel.comentariosSelectorAutomatico}</div>
+                </div>
+
+                <!-- Sección de Bomba Eléctrica en el Reporte -->
+                <h4 class="text-xl font-semibold text-gray-700 mt-6 mb-3">Bomba Eléctrica</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm text-gray-700">
+                    <div><strong>1. Tablero en Automático:</strong> ${report.electrica.tableroAutomatico}</div>
+                    <div><strong>Comentarios:</strong> ${report.electrica.comentariosTablero}</div>
+                    <div><strong>2. Válvulas Succión/Descarga Abiertas/Aseguradas:</strong> ${report.electrica.valvulasAbiertasAseguradas}</div>
+                    <div><strong>Comentarios:</strong> ${report.electrica.comentariosValvulas}</div>
+                    <div class="col-span-2">
+                        <strong>3. Voltaje Entrada Interruptor Ppal:</strong>
+                        <ul class="list-disc list-inside ml-4">
+                            <li>L1,2=: ${report.electrica.voltajeEntradaPpal.l12}</li>
+                            <li>L2,3=: ${report.electrica.voltajeEntradaPpal.l23}</li>
+                            <li>L1,3=: ${report.electrica.voltajeEntradaPpal.l13}</li>
+                        </ul>
+                    </div>
+                    <div class="col-span-2"><strong>Comentarios:</strong> ${report.electrica.comentariosVoltajeEntradaPpal}</div>
+                    <div class="col-span-2">
+                        <strong>4. Voltaje Salida Interruptor Ppal:</strong>
+                        <ul class="list-disc list-inside ml-4">
+                            <li>L1,2=: ${report.electrica.voltajeSalidaPpal.l12}</li>
+                            <li>L2,3=: ${report.electrica.voltajeSalidaPpal.l23}</li>
+                            <li>L1,3=: ${report.electrica.voltajeSalidaPpal.l13}</li>
+                        </ul>
+                    </div>
+                    <div class="col-span-2"><strong>Comentarios:</strong> ${report.electrica.comentariosVoltajeSalidaPpal}</div>
+                    <div class="col-span-2">
+                        <strong>5. Voltaje Entrada Contactor:</strong>
+                        <ul class="list-disc list-inside ml-4">
+                            <li>L1,2=: ${report.electrica.voltajeEntradaContactor.l12}</li>
+                            <li>L2,3=: ${report.electrica.voltajeEntradaContactor.l23}</li>
+                            <li>L1,3=: ${report.electrica.voltajeEntradaContactor.l13}</li>
+                        </ul>
+                    </div>
+                    <div class="col-span-2"><strong>Comentarios:</strong> ${report.electrica.comentariosVoltajeEntradaContactor}</div>
+                    <div class="col-span-2">
+                        <strong>6. Voltaje Salida Contactor:</strong>
+                        <ul class="list-disc list-inside ml-4">
+                            <li>L1,2=: ${report.electrica.voltajeSalidaContactor.l12}</li>
+                            <li>L2,3=: ${report.electrica.voltajeSalidaContactor.l23}</li>
+                            <li>L1,3=: ${report.electrica.voltajeSalidaContactor.l13}</li>
+                        </ul>
+                    </div>
+                    <div class="col-span-2"><strong>Comentarios:</strong> ${report.electrica.comentariosVoltajeSalidaContactor}</div>
+                    <div class="col-span-2">
+                        <strong>7. Corriente de Tablero:</strong>
+                        <ul class="list-disc list-inside ml-4">
+                            <li>I1.=: ${report.electrica.corrienteTablero.i1}</li>
+                            <li>I2=: ${report.electrica.corrienteTablero.i2}</li>
+                            <li>I3=: ${report.electrica.corrienteTablero.i3}</li>
+                        </ul>
+                    </div>
+                    <div class="col-span-2"><strong>Comentarios:</strong> ${report.electrica.comentariosCorrienteTablero}</div>
+                    <div><strong>8. Manómetro Descarga Operando:</strong> ${report.electrica.manometroDescargaOperando}</div>
+                    <div><strong>Lectura:</strong> ${report.electrica.lecturaManometroDescarga}</div>
+                    <div><strong>Comentarios:</strong> ${report.electrica.comentariosManometroDescarga}</div>
+                    <div><strong>9. Parámetros Switch Presión:</strong> ${report.electrica.parametrosSwitchPresion}</div>
+                    <div><strong>Comentarios:</strong> ${report.electrica.comentariosParametrosSwitchPresion}</div>
+                    <div><strong>10. Presión de Arranque:</strong> ${report.electrica.presionArranque}</div>
+                    <div><strong>Comentarios:</strong> ${report.electrica.comentariosPresionArranque}</div>
+                    <div><strong>11. Presión de Paro:</strong> ${report.electrica.presionParo}</div>
+                    <div><strong>Comentarios:</strong> ${report.electrica.comentariosPresionParo}</div>
+                </div>
+
+                <!-- Sección de Bomba Jockey en el Reporte -->
+                <h4 class="text-xl font-semibold text-gray-700 mt-6 mb-3">Bomba Jockey</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm text-gray-700">
+                    <div><strong>1. Tablero en Automático:</strong> ${report.jockey.tableroAutomatico}</div>
+                    <div><strong>Comentarios:</strong> ${report.jockey.comentariosTablero}</div>
+                    <div><strong>2. Válvulas Succión/Descarga Abiertas/Aseguradas:</strong> ${report.jockey.valvulasAbiertasAseguradas}</div>
+                    <div><strong>Comentarios:</strong> ${report.jockey.comentariosValvulas}</div>
+                    <div class="col-span-2">
+                        <strong>3. Voltaje Entrada Interruptor Ppal:</strong>
+                        <ul class="list-disc list-inside ml-4">
+                            <li>L1,2=: ${report.jockey.voltajeEntradaPpal.l12}</li>
+                            <li>L2,3=: ${report.jockey.voltajeEntradaPpal.l23}</li>
+                            <li>L1,3=: ${report.jockey.voltajeEntradaPpal.l13}</li>
+                        </ul>
+                    </div>
+                    <div class="col-span-2"><strong>Comentarios:</strong> ${report.jockey.comentariosVoltajeEntradaPpal}</div>
+                    <div class="col-span-2">
+                        <strong>4. Voltaje Salida Interruptor Ppal:</strong>
+                        <ul class="list-disc list-inside ml-4">
+                            <li>L1,2=: ${report.jockey.voltajeSalidaPpal.l12}</li>
+                            <li>L2,3=: ${report.jockey.voltajeSalidaPpal.l23}</li>
+                            <li>L1,3=: ${report.jockey.voltajeSalidaPpal.l13}</li>
+                        </ul>
+                    </div>
+                    <div class="col-span-2"><strong>Comentarios:</strong> ${report.jockey.comentariosVoltajeSalidaPpal}</div>
+                    <div class="col-span-2">
+                        <strong>5. Voltaje Entrada Contactor:</strong>
+                        <ul class="list-disc list-inside ml-4">
+                            <li>L1,2=: ${report.jockey.voltajeEntradaContactor.l12}</li>
+                            <li>L2,3=: ${report.jockey.voltajeEntradaContactor.l23}</li>
+                            <li>L1,3=: ${report.jockey.voltajeEntradaContactor.l13}</li>
+                        </ul>
+                    </div>
+                    <div class="col-span-2"><strong>Comentarios:</strong> ${report.jockey.comentariosVoltajeEntradaContactor}</div>
+                    <div class="col-span-2">
+                        <strong>6. Voltaje Salida Contactor:</strong>
+                        <ul class="list-disc list-inside ml-4">
+                            <li>L1,2=: ${report.jockey.voltajeSalidaContactor.l12}</li>
+                            <li>L2,3=: ${report.jockey.voltajeSalidaContactor.l23}</li>
+                            <li>L1,3=: ${report.jockey.voltajeSalidaContactor.l13}</li>
+                        </ul>
+                    </div>
+                    <div class="col-span-2"><strong>Comentarios:</strong> ${report.jockey.comentariosVoltajeSalidaContactor}</div>
+                    <div class="col-span-2">
+                        <strong>7. Corriente de Tablero:</strong>
+                        <ul class="list-disc list-inside ml-4">
+                            <li>I1.=: ${report.jockey.corrienteTablero.i1}</li>
+                            <li>I2=: ${report.jockey.corrienteTablero.i2}</li>
+                            <li>I3=: ${report.jockey.corrienteTablero.i3}</li>
+                        </ul>
+                    </div>
+                    <div class="col-span-2"><strong>Comentarios:</strong> ${report.jockey.comentariosCorrienteTablero}</div>
+                    <div><strong>8. Presión Manómetro Descarga:</strong> ${report.jockey.presionManometroDescarga}</div>
+                    <div><strong>Comentarios:</strong> ${report.jockey.comentariosPresionManometroDescarga}</div>
+                    <div><strong>9. Parámetros Switch Presión:</strong> ${report.jockey.parametrosSwitchPresion}</div>
+                    <div><strong>Comentarios:</strong> ${report.jockey.comentariosParametrosSwitchPresion}</div>
+                    <div><strong>10. Presión de Arranque:</strong> ${report.jockey.presionArranque}</div>
+                    <div><strong>Comentarios:</strong> ${report.jockey.comentariosPresionArranque}</div>
+                    <div><strong>11. Presión de Paro:</strong> ${report.jockey.presionParo}</div>
+                    <div><strong>Comentarios:</strong> ${report.jockey.comentariosPresionParo}</div>
+                </div>
+            `;
+
+            // Añade el nuevo reporte al principio de la lista
+            reportsList.prepend(reportItem);
+        }
+
+        // Función para exportar a PDF
+        document.getElementById('exportPdfBtn').addEventListener('click', function() {
+            const reportsListElement = document.getElementById('reportsList');
+            if (reportsListElement.children.length === 0 || (reportsListElement.children.length === 1 && reportsListElement.children[0].id === 'noReportsMessage')) {
+                alert('No hay reportes para exportar a PDF.');
+                return;
+            }
+
+            // Oculta el botón de exportar PDF temporalmente para que no aparezca en el PDF
+            this.style.display = 'none';
+
+            // Oculta el mensaje "No hay reportes" si está presente
+            const noReportsMessage = document.getElementById('noReportsMessage');
+            if (noReportsMessage) {
+                noReportsMessage.style.display = 'none';
+            }
+
+            html2canvas(reportsListElement, {
+                scale: 2, // Aumenta la escala para una mejor calidad en el PDF
+                useCORS: true // Importante si hay imágenes de diferentes orígenes
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4'); // 'p' para portrait, 'mm' para milímetros, 'a4' tamaño de página
+
+                const imgWidth = 210; // Ancho A4 en mm
+                const pageHeight = 297; // Alto A4 en mm
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+
+                pdf.save('Reporte_Semanal_Bombas.pdf');
+
+                // Vuelve a mostrar el botón de exportar PDF
+                this.style.display = 'block';
+                // Vuelve a mostrar el mensaje "No hay reportes" si estaba oculto
+                if (noReportsMessage) {
+                    noReportsMessage.style.display = 'block';
+                }
+            }).catch(error => {
+                console.error("Error al generar el PDF:", error);
+                alert("Hubo un error al generar el PDF. Por favor, inténtalo de nuevo.");
+                // Asegúrate de volver a mostrar el botón y el mensaje en caso de error
+                this.style.display = 'block';
+                if (noReportsMessage) {
+                    noReportsMessage.style.display = 'block';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
