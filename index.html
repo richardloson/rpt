@@ -2,62 +2,85 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Bienvenido a RPT</title>
+  <title>Reporte Semanal de Bombas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- jsPDF y html2canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <style>
     body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f4f4;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      font-family: 'Inter', sans-serif;
+      background-color: #f3f4f6;
     }
-
-    header {
-      background-color: #004080;
-      color: white;
-      width: 100%;
-      padding: 20px 0;
-      text-align: center;
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 1.5rem;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
-
-    img.logo {
-      margin-top: 20px;
-      width: 150px;
-      height: auto;
+    .btn {
+      background-color: #2563eb;
+      color: #fff;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
     }
-
-    section {
-      max-width: 800px;
-      padding: 20px;
-      text-align: center;
+    .btn:hover {
+      background-color: #1d4ed8;
+      transform: translateY(-1px);
     }
-
-    footer {
-      background-color: #004080;
-      color: white;
-      width: 100%;
-      text-align: center;
-      padding: 10px 0;
-      margin-top: auto;
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    #exportPdfBtn {
+      background-color: #dc2626;
+    }
+    #exportPdfBtn:hover {
+      background-color: #b91c1c;
+    }
+    .section-title {
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 0.75rem;
+      margin-bottom: 1.5rem;
+      color: #1f2937;
+    }
+    .report-item {
+      background-color: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>RPT - Sistema de Protección</h1>
-  </header>
+  <div class="container">
+    <!-- Logotipo -->
+    <div class="flex justify-center mb-6">
+      <img src="logo.png" alt="Logotipo RCI" class="h-20 w-auto rounded-md shadow-md object-contain">
+    </div>
 
-  <img src="logo.png" alt="Logotipo de RPT" class="logo">
+    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Reporte Semanal de Bombas</h1>
 
-  <section>
-    <h2>Bienvenido</h2>
-    <p>Este sitio es parte de un proyecto técnico para mostrar el funcionamiento de sistemas de protección contra incendios conforme a normas NFPA.</p>
-  </section>
+    <!-- Formulario y secciones van aquí (puedes pegar el resto que ya tienes) -->
 
-  <footer>
-    <p>&copy; 2025 Richardloson</p>
-  </footer>
+    <!-- Botón para exportar a PDF -->
+    <button id="exportPdfBtn" class="w-full mt-4 btn">Exportar a PDF</button>
+  </div>
+
+  <script>
+    // Aquí van tus funciones JavaScript para manejar el formulario y exportar PDF (las que ya tienes del archivo original)
+  </script>
 </body>
 </html>
