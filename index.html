@@ -9,42 +9,21 @@
     body {
       font-family: Arial, sans-serif;
       background: #f9fafb;
-      margin: 20px;
       color: #1f2937;
+      padding: 20px;
     }
-    h1 {
+    h1, h2 {
       text-align: center;
       color: #1f2937;
     }
-    .cliente {
-      margin-bottom: 20px;
-    }
-    .seccion {
-      background: #f3f4f6;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-    }
-    .seccion h2 {
-      margin-top: 0;
-      color: #1f2937;
-      border-bottom: 1px solid #d1d5db;
-      padding-bottom: 5px;
-    }
-    .actividad {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 5px 0;
-      border-bottom: 1px dashed #d1d5db;
-    }
-    .actividad:last-child {
-      border-bottom: none;
+    .campo {
+      margin-bottom: 10px;
     }
     label {
       font-weight: bold;
+      display: block;
     }
-    input[type="text"] {
+    input[type="text"], input[type="date"] {
       width: 100%;
       padding: 8px;
       margin-top: 5px;
@@ -52,100 +31,160 @@
       border: 1px solid #ccc;
       border-radius: 5px;
     }
-    input[type="date"] {
-      padding: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
     .boton {
       display: block;
-      margin: 30px auto;
+      margin: 20px auto;
+      padding: 10px 20px;
+      font-size: 16px;
       background-color: #1f2937;
       color: white;
       border: none;
-      padding: 10px 20px;
-      font-size: 16px;
       border-radius: 8px;
       cursor: pointer;
     }
-    .boton:hover {
-      background-color: #374151;
+    .calendario {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      margin-top: 20px;
+      font-size: 12px;
+    }
+    .dia {
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 5px;
+      height: 70px;
+      position: relative;
+    }
+    .dia span {
+      font-weight: bold;
+    }
+    .etiqueta {
+      position: absolute;
+      bottom: 5px;
+      left: 5px;
+      right: 5px;
+      font-size: 10px;
+      padding: 2px;
+      border-radius: 4px;
+      text-align: center;
+      color: white;
+    }
+    .Semanal { background-color: #2563eb; }
+    .Mensual { background-color: #10b981; }
+    .Semestral { background-color: #f59e0b; }
+    .Anual { background-color: #dc2626; }
+    .mes {
+      margin-top: 40px;
+    }
+    .nombre-mes {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #111827;
     }
   </style>
 </head>
 <body>
   <div id="contenido">
-    <h1>Calendario de Actividades de Servicio</h1>
-    
-    <div class="cliente">
+    <h1>Calendario de Actividades</h1>
+
+    <div class="campo">
       <label for="cliente">Nombre del Cliente:</label>
       <input type="text" id="cliente" placeholder="Ej: SAFRAN Planta 2 y 3" />
     </div>
 
-    <!-- Sección Mensual -->
-    <div class="seccion">
-      <h2>Servicio Mensual</h2>
-      <div class="actividad">
-        <span>Equipo de bombeo</span>
-        <input type="date" />
-      </div>
-      <div class="actividad">
-        <span>Red de hidrantes</span>
-        <input type="date" />
-      </div>
+    <div class="campo">
+      <label for="fecha-inicial">Fecha Inicial:</label>
+      <input type="date" id="fecha-inicial" />
     </div>
 
-    <!-- Sección Semestral -->
-    <div class="seccion">
-      <h2>Servicio Semestral</h2>
-      <div class="actividad">
-        <span>Inspección a sistema Ansul</span>
-        <input type="date" />
-      </div>
-      <div class="actividad">
-        <span>Inspección a Site</span>
-        <input type="date" />
-      </div>
-      <div class="actividad">
-        <span>Cierre/apertura de válvulas</span>
-        <input type="date" />
-      </div>
-    </div>
+    <button class="boton" onclick="generarCalendario()">Marcar Calendario</button>
 
-    <!-- Sección Anual -->
-    <div class="seccion">
-      <h2>Servicio Anual</h2>
-      <div class="actividad">
-        <span>Afinación de motor de combustión</span>
-        <input type="date" />
-      </div>
-      <div class="actividad">
-        <span>Pruebas hidrostáticas</span>
-        <input type="date" />
-      </div>
-      <div class="actividad">
-        <span>Pruebas de eficiencia</span>
-        <input type="date" />
-      </div>
-      <div class="actividad">
-        <span>Inspección acoplamiento mecánico</span>
-        <input type="date" />
-      </div>
-    </div>
-
-    <!-- Sección Semanal -->
-    <div class="seccion">
-      <h2>Servicio Semanal</h2>
-      <div class="actividad">
-        <span>Arranque de bombas</span>
-        <input type="date" />
-      </div>
-    </div>
+    <div id="calendarios"></div>
   </div>
 
   <button class="boton" onclick="exportarPDF()">Exportar a PDF</button>
 
   <script>
+    function generarCalendario() {
+      const inicio = new Date(document.getElementById('fecha-inicial').value);
+      const contenedor = document.getElementById('calendarios');
+      contenedor.innerHTML = '';
+
+      if (!inicio) return;
+
+      let actual = new Date(inicio);
+      let fin = new Date(inicio);
+      fin.setFullYear(fin.getFullYear() + 1);
+
+      const etiquetas = {};
+
+      while (actual <= fin) {
+        const year = actual.getFullYear();
+        const month = actual.getMonth();
+
+        const diasEnMes = new Date(year, month + 1, 0).getDate();
+        const mesNombre = actual.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
+        const primerDiaSemana = new Date(year, month, 1).getDay();
+
+        const calendarioHTML = document.createElement('div');
+        calendarioHTML.classList.add('mes');
+
+        const tituloMes = document.createElement('div');
+        tituloMes.className = 'nombre-mes';
+        tituloMes.textContent = mesNombre.charAt(0).toUpperCase() + mesNombre.slice(1);
+        calendarioHTML.appendChild(tituloMes);
+
+        const grid = document.createElement('div');
+        grid.className = 'calendario';
+
+        // Días vacíos hasta el primer día
+        for (let i = 0; i < (primerDiaSemana === 0 ? 6 : primerDiaSemana - 1); i++) {
+          const empty = document.createElement('div');
+          grid.appendChild(empty);
+        }
+
+        // Generar los días
+        for (let dia = 1; dia <= diasEnMes; dia++) {
+          const fecha = new Date(year, month, dia);
+          const div = document.createElement('div');
+          div.className = 'dia';
+          div.innerHTML = `<span>${dia}</span>`;
+
+          const etiquetas = [];
+
+          if (fecha.getDay() === 1) etiquetas.push("Semanal"); // lunes
+
+          if (dia <= 7 && fecha.getDay() === 1) etiquetas.push("Mensual"); // primer lunes
+
+          if (
+            (fecha.getDate() === 1 && fecha.getMonth() === 5) ||
+            (fecha.getDate() === 1 && fecha.getMonth() === 11)
+          ) etiquetas.push("Semestral");
+
+          if (fecha.getDate() === 1 && fecha.getMonth() === 7)
+            etiquetas.push("Anual");
+
+          etiquetas.forEach(tag => {
+            const etq = document.createElement('div');
+            etq.className = `etiqueta ${tag}`;
+            etq.textContent = tag;
+            div.appendChild(etq);
+          });
+
+          grid.appendChild(div);
+        }
+
+        calendarioHTML.appendChild(grid);
+        contenedor.appendChild(calendarioHTML);
+
+        // Siguiente mes
+        actual.setMonth(actual.getMonth() + 1);
+        actual.setDate(1);
+      }
+    }
+
     function exportarPDF() {
       const cliente = document.getElementById("cliente").value || "cliente";
       const fecha = new Date().toISOString().slice(2,10).replace(/-/g, '');
