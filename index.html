@@ -1,61 +1,61 @@
 <!DOCTYPE html>
 <html lang="es">
-<cabeza>
+<head>
   <meta charset="UTF-8" />
   <title>Calendario Visual Anual</title>
-  <estilo>
-    cuerpo { familia de fuentes: Arial, sans-serif; margen: 20px; fondo: #fff; }
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #fff; }
     .mes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; page-break-inside: avoid; }
-    .mes { borde: 1px sólido #ccc; relleno: 5px; }
-    .mes h4 { alineación del texto: centro; margen: 5px 0; }
+    .mes { border: 1px solid #ccc; padding: 5px; }
+    .mes h4 { text-align: center; margin: 5px 0; }
     .dias, .fechas { display: grid; grid-template-columns: repeat(7, 1fr); font-size: 10px; }
-    .dias div { peso de fuente: negrita; alineación del texto: centro; }
-    .fechas div { altura: 40px; borde: 1px sólido #eee; relleno: 2px; tamaño de fuente: 9px; posición: relativa; }
-    .evento { posición: absoluta; inferior: 2px; izquierda: 2px; derecha: 2px; tamaño de fuente: 7px; relleno: 1px; radio del borde: 3px; color: #fff; }
-    .Semanal { fondo: #3b82f6; }
-    .Mensual { fondo: #22c55e; }
-    .Semestral { fondo: #f97316; }
-    .Anual { fondo: #ef4444; }
-    .boton { margen superior: 20px; relleno: 10px 20px; fondo: #1f2937; color: blanco; borde: ninguno; radio del borde: 5px; cursor: puntero; }
-    #exportPDF { margen superior: 30px; }
-    tabla { tamaño de fuente: 12px; ancho: 100%; margen superior: 10px; colapso del borde: colapsar; }
-    td, th { borde: 1px sólido #ccc; relleno: 5px; alineación del texto: izquierda; }
-  </estilo>
-</cabeza>
-<cuerpo>
+    .dias div { font-weight: bold; text-align: center; }
+    .fechas div { height: 40px; border: 1px solid #eee; padding: 2px; font-size: 9px; position: relative; }
+    .evento { position: absolute; bottom: 2px; left: 2px; right: 2px; font-size: 7px; padding: 1px; border-radius: 3px; color: #fff; }
+    .Semanal { background: #3b82f6; }
+    .Mensual { background: #22c55e; }
+    .Semestral { background: #f97316; }
+    .Anual { background: #ef4444; }
+    .boton { margin-top: 20px; padding: 10px 20px; background: #1f2937; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    #exportPDF { margin-top: 30px; }
+    table { font-size: 12px; width: 100%; margin-top: 10px; border-collapse: collapse; }
+    td, th { border: 1px solid #ccc; padding: 5px; text-align: left; }
+  </style>
+</head>
+<body>
   <h2>Calendario de Servicios 2025</h2>
   <p><strong>Cliente:</strong> <span id="cliente">Aircom</span></p>
   <p><strong>Dirección:</strong> <span id="direccion">Planta 2 y 3</span></p>
 
   <h3>Servicios Programados</h3>
-  <tabla>
+  <table>
     <thead><tr><th>Frecuencia</th><th>Servicios</th></tr></thead>
-    <cuerpo>
+    <tbody>
       <tr><td>Semanal</td><td>Equipo de bombeo</td></tr>
       <tr><td>Mensual</td><td>Equipo de bombeo, Red de rociadores, Red de hidrantes, Sistema de detección</td></tr>
-      <tr><td>Semestral</td><td>Sistema de sitio, Sistema de cocina, Revisión de válvulas</td></tr>
-      <tr><td>Anual</td><td>Afinación motor diesel, Pruebas de eficiencia, Pruebas hidrostáticas</td></tr>
+      <tr><td>Semestral</td><td>Sistema de site, Sistema de cocina, Revisión de válvulas</td></tr>
+      <tr><td>Anual</td><td>Afinación motor diésel, Pruebas de eficiencia, Pruebas hidrostáticas</td></tr>
     </tbody>
-  </tabla>
+  </table>
 
   <div class="mes-grid" id="calendario"></div>
 
-  Exportar un PDF
+  <button class="boton" onclick="exportarPDF()">Exportar a PDF</button>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <guión>
-    eventos constantes = {
+  <script>
+    const eventos = {
       "2025-01-14": [{ texto: "Equipo de bombeo", tipo: "Semanal" }],
       "2025-02-18": [{ texto: "Red de hidrantes", tipo: "Mensual" }],
       "2025-01-20": [{ texto: "Revisión de válvulas", tipo: "Semestral" }],
       "2025-05-10": [{ texto: "Pruebas de eficiencia", tipo: "Anual" }]
     };
 
-    función generarCalendarioVisual() {
+    function generarCalendarioVisual() {
       const calendario = document.getElementById("calendario");
       const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
                      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-      para (sea mes = 0; mes < 12; mes++) {
+      for (let mes = 0; mes < 12; mes++) {
         const cont = document.createElement("div");
         cont.className = "mes";
         cont.innerHTML = `<h4>${meses[mes]}</h4>`;
@@ -64,18 +64,18 @@
         ["L", "M", "M", "J", "V", "S", "D"].forEach(d => {
           dias.innerHTML += `<div>${d}</div>`;
         });
-        cont.appendChild(días);
+        cont.appendChild(dias);
         const fechas = document.createElement("div");
         fechas.className = "fechas";
 
-        const primerDia = nueva Fecha(2025, mes, 1);
-        let offset = (primerDia.getDay() + 6) % 7; //lunes=0
-        para (sea i = 0; i < desplazamiento; i++) fechas.innerHTML += "<div></div>";
+        const primerDia = new Date(2025, mes, 1);
+        let offset = (primerDia.getDay() + 6) % 7; // lunes=0
+        for (let i = 0; i < offset; i++) fechas.innerHTML += "<div></div>";
 
-        const diasMes = nueva Fecha(2025, mes+1, 0).getDate();
+        const diasMes = new Date(2025, mes+1, 0).getDate();
         for (let dia = 1; dia <= diasMes; dia++) {
           const fecha = `2025-${String(mes+1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
-          sea celda = `<div>${dia}`;
+          let celda = `<div>${dia}`;
           if (eventos[fecha]) {
             eventos[fecha].forEach(e => {
               celda += `<div class="evento ${e.tipo}">${e.texto}</div>`;
@@ -90,17 +90,17 @@
       }
     }
 
-    función exportarPDF() {
-      const contenido = documento.cuerpo;
+    function exportarPDF() {
+      const contenido = document.body;
       html2pdf().set({
-        margen: 5,
-        nombre del archivo: 'CALENDARIO_VISUAL_2025.pdf',
-        html2canvas: { escala: 1 },
-        jsPDF: { unidad: 'mm', formato: 'a4', orientación: 'vertical' }
+        margin: 5,
+        filename: 'CALENDARIO_VISUAL_2025.pdf',
+        html2canvas: { scale: 1 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       }).from(contenido).save();
     }
 
     generarCalendarioVisual();
   </script>
-</cuerpo>
+</body>
 </html>
