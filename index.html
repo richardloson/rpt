@@ -12,9 +12,9 @@
       color: #1f2937;
       padding: 20px;
     }
-    h1, h2 {
-      text-align: center;
+    h1, h2, h3 {
       color: #1f2937;
+      text-align: center;
     }
     .campo {
       margin-bottom: 10px;
@@ -41,6 +41,20 @@
       border: none;
       border-radius: 8px;
       cursor: pointer;
+    }
+    .pdf-export {
+      zoom: 0.65;
+    }
+    .actividades {
+      background: #f3f4f6;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+    }
+    ul {
+      padding-left: 20px;
+      margin-top: 0;
+      margin-bottom: 10px;
     }
     .calendario {
       display: grid;
@@ -75,19 +89,20 @@
     .Semestral { background-color: #f59e0b; }
     .Anual { background-color: #dc2626; }
     .mes {
-      margin-top: 40px;
+      margin-top: 30px;
     }
     .nombre-mes {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: bold;
-      margin-bottom: 10px;
+      margin-bottom: 5px;
+      text-align: center;
       color: #111827;
     }
   </style>
 </head>
 <body>
   <div id="contenido">
-    <h1>Calendario de Actividades</h1>
+    <h1>Calendario de Actividades de Servicio</h1>
 
     <div class="campo">
       <label for="cliente">Nombre del Cliente:</label>
@@ -97,6 +112,36 @@
     <div class="campo">
       <label for="fecha-inicial">Fecha Inicial:</label>
       <input type="date" id="fecha-inicial" />
+    </div>
+
+    <div class="actividades">
+      <h2>Actividades por Frecuencia</h2>
+
+      <h3>🔁 Servicio Semanal</h3>
+      <ul>
+        <li>Arranque de bombas</li>
+      </ul>
+
+      <h3>📅 Servicio Mensual</h3>
+      <ul>
+        <li>Equipo de bombeo</li>
+        <li>Red de hidrantes</li>
+      </ul>
+
+      <h3>🌓 Servicio Semestral</h3>
+      <ul>
+        <li>Inspección a sistema Ansul</li>
+        <li>Inspección a Site</li>
+        <li>Cierre/apertura de válvulas</li>
+      </ul>
+
+      <h3>📆 Servicio Anual</h3>
+      <ul>
+        <li>Afinación de motor de combustión</li>
+        <li>Pruebas hidrostáticas</li>
+        <li>Pruebas de eficiencia</li>
+        <li>Inspección acoplamiento mecánico</li>
+      </ul>
     </div>
 
     <button class="boton" onclick="generarCalendario()">Marcar Calendario</button>
@@ -112,13 +157,11 @@
       const contenedor = document.getElementById('calendarios');
       contenedor.innerHTML = '';
 
-      if (!inicio) return;
+      if (!inicio.getTime()) return;
 
       let actual = new Date(inicio);
       let fin = new Date(inicio);
       fin.setFullYear(fin.getFullYear() + 1);
-
-      const etiquetas = {};
 
       while (actual <= fin) {
         const year = actual.getFullYear();
@@ -139,13 +182,10 @@
         const grid = document.createElement('div');
         grid.className = 'calendario';
 
-        // Días vacíos hasta el primer día
         for (let i = 0; i < (primerDiaSemana === 0 ? 6 : primerDiaSemana - 1); i++) {
-          const empty = document.createElement('div');
-          grid.appendChild(empty);
+          grid.appendChild(document.createElement('div'));
         }
 
-        // Generar los días
         for (let dia = 1; dia <= diasEnMes; dia++) {
           const fecha = new Date(year, month, dia);
           const div = document.createElement('div');
@@ -154,17 +194,10 @@
 
           const etiquetas = [];
 
-          if (fecha.getDay() === 1) etiquetas.push("Semanal"); // lunes
-
-          if (dia <= 7 && fecha.getDay() === 1) etiquetas.push("Mensual"); // primer lunes
-
-          if (
-            (fecha.getDate() === 1 && fecha.getMonth() === 5) ||
-            (fecha.getDate() === 1 && fecha.getMonth() === 11)
-          ) etiquetas.push("Semestral");
-
-          if (fecha.getDate() === 1 && fecha.getMonth() === 7)
-            etiquetas.push("Anual");
+          if (fecha.getDay() === 1) etiquetas.push("Semanal");
+          if (dia <= 7 && fecha.getDay() === 1) etiquetas.push("Mensual");
+          if ((dia === 1 && month === 5) || (dia === 1 && month === 11)) etiquetas.push("Semestral");
+          if (dia === 1 && month === 7) etiquetas.push("Anual");
 
           etiquetas.forEach(tag => {
             const etq = document.createElement('div');
@@ -179,7 +212,6 @@
         calendarioHTML.appendChild(grid);
         contenedor.appendChild(calendarioHTML);
 
-        // Siguiente mes
         actual.setMonth(actual.getMonth() + 1);
         actual.setDate(1);
       }
@@ -191,15 +223,20 @@
       const nombreArchivo = `CAL_${cliente.replace(/\s+/g, '_')}_${fecha}.pdf`;
 
       const element = document.getElementById("contenido");
+      element.classList.add("pdf-export");
+
       html2pdf()
         .set({
-          margin: 10,
+          margin: 5,
           filename: nombreArchivo,
-          html2canvas: { scale: 2 },
+          html2canvas: { scale: 0.8, useCORS: true },
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
         })
         .from(element)
-        .save();
+        .save()
+        .then(() => {
+          element.classList.remove("pdf-export");
+        });
     }
   </script>
 </body>
