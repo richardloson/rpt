@@ -1,252 +1,106 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
+<cabeza>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Calendario de Servicios</title>
+  <title>Calendario Visual Anual</title>
+  <estilo>
+    cuerpo { familia de fuentes: Arial, sans-serif; margen: 20px; fondo: #fff; }
+    .mes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; page-break-inside: avoid; }
+    .mes { borde: 1px sólido #ccc; relleno: 5px; }
+    .mes h4 { alineación del texto: centro; margen: 5px 0; }
+    .dias, .fechas { display: grid; grid-template-columns: repeat(7, 1fr); font-size: 10px; }
+    .dias div { peso de fuente: negrita; alineación del texto: centro; }
+    .fechas div { altura: 40px; borde: 1px sólido #eee; relleno: 2px; tamaño de fuente: 9px; posición: relativa; }
+    .evento { posición: absoluta; inferior: 2px; izquierda: 2px; derecha: 2px; tamaño de fuente: 7px; relleno: 1px; radio del borde: 3px; color: #fff; }
+    .Semanal { fondo: #3b82f6; }
+    .Mensual { fondo: #22c55e; }
+    .Semestral { fondo: #f97316; }
+    .Anual { fondo: #ef4444; }
+    .boton { margen superior: 20px; relleno: 10px 20px; fondo: #1f2937; color: blanco; borde: ninguno; radio del borde: 5px; cursor: puntero; }
+    #exportPDF { margen superior: 30px; }
+    tabla { tamaño de fuente: 12px; ancho: 100%; margen superior: 10px; colapso del borde: colapsar; }
+    td, th { borde: 1px sólido #ccc; relleno: 5px; alineación del texto: izquierda; }
+  </estilo>
+</cabeza>
+<cuerpo>
+  <h2>Calendario de Servicios 2025</h2>
+  <p><strong>Cliente:</strong> <span id="cliente">Aircom</span></p>
+  <p><strong>Dirección:</strong> <span id="direccion">Planta 2 y 3</span></p>
+
+  <h3>Servicios Programados</h3>
+  <tabla>
+    <thead><tr><th>Frecuencia</th><th>Servicios</th></tr></thead>
+    <cuerpo>
+      <tr><td>Semanal</td><td>Equipo de bombeo</td></tr>
+      <tr><td>Mensual</td><td>Equipo de bombeo, Red de rociadores, Red de hidrantes, Sistema de detección</td></tr>
+      <tr><td>Semestral</td><td>Sistema de sitio, Sistema de cocina, Revisión de válvulas</td></tr>
+      <tr><td>Anual</td><td>Afinación motor diesel, Pruebas de eficiencia, Pruebas hidrostáticas</td></tr>
+    </tbody>
+  </tabla>
+
+  <div class="mes-grid" id="calendario"></div>
+
+  Exportar un PDF
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9fafb;
-      color: #1f2937;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      color: #1f2937;
-    }
-    .formulario, .seccion {
-      margin-bottom: 25px;
-      background: #f3f4f6;
-      padding: 15px;
-      border-radius: 10px;
-    }
-    label, select, input {
-      display: block;
-      width: 100%;
-      margin-top: 5px;
-      margin-bottom: 10px;
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    .checkbox-group label {
-      display: inline-block;
-      width: auto;
-      margin-right: 10px;
-    }
-    .boton {
-      display: block;
-      margin: 20px auto;
-      background-color: #1f2937;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      font-size: 14px;
-    }
-    th, td {
-      padding: 8px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-    .Semanal { background-color: #bfdbfe; }
-    .Mensual { background-color: #bbf7d0; }
-    .Semestral { background-color: #fed7aa; }
-    .Anual { background-color: #fecaca; }
-  </style>
-</head>
-<body>
-  <h1>Calendario de Servicios</h1>
+  <guión>
+    eventos constantes = {
+      "2025-01-14": [{ texto: "Equipo de bombeo", tipo: "Semanal" }],
+      "2025-02-18": [{ texto: "Red de hidrantes", tipo: "Mensual" }],
+      "2025-01-20": [{ texto: "Revisión de válvulas", tipo: "Semestral" }],
+      "2025-05-10": [{ texto: "Pruebas de eficiencia", tipo: "Anual" }]
+    };
 
-  <div class="formulario">
-    <label>Cliente</label>
-    <input type="text" id="cliente" placeholder="Nombre del cliente" />
-    
-    <label>Dirección</label>
-    <input type="text" id="direccion" placeholder="Dirección" />
-
-    <div class="seccion">
-      <h3>Servicio semanal</h3>
-      <label>Día de servicio (lunes a sábado)</label>
-      <select id="diaSemanal">
-        <option value="1">Lunes</option>
-        <option value="2">Martes</option>
-        <option value="3">Miércoles</option>
-        <option value="4">Jueves</option>
-        <option value="5">Viernes</option>
-        <option value="6">Sábado</option>
-      </select>
-    </div>
-
-    <div class="seccion">
-      <h3>Servicio mensual</h3>
-      <div class="checkbox-group">
-        <label><input type="checkbox" value="Equipo de bombeo" class="mensual"> Equipo de bombeo</label>
-        <label><input type="checkbox" value="Red de rociadores" class="mensual"> Red de rociadores</label>
-        <label><input type="checkbox" value="Red de hidrantes" class="mensual"> Red de hidrantes</label>
-        <label><input type="checkbox" value="Sistema de detección" class="mensual"> Sistema de detección</label>
-      </div>
-      <label>Día mensual</label>
-      <select id="semanaMes">
-        <option value="1">Primer</option>
-        <option value="2">Segundo</option>
-        <option value="3">Tercer</option>
-        <option value="4">Cuarto</option>
-      </select>
-      <select id="diaMensual">
-        <option value="1">Lunes</option>
-        <option value="2">Martes</option>
-        <option value="3">Miércoles</option>
-        <option value="4">Jueves</option>
-        <option value="5">Viernes</option>
-        <option value="6">Sábado</option>
-      </select>
-    </div>
-
-    <div class="seccion">
-      <h3>Servicio semestral</h3>
-      <div class="checkbox-group">
-        <label><input type="checkbox" value="Sistema de Site" class="semestral"> Sistema de Site</label>
-        <label><input type="checkbox" value="Sistema de cocina" class="semestral"> Sistema de cocina</label>
-        <label><input type="checkbox" value="Revisión de válvulas" class="semestral"> Revisión de válvulas</label>
-      </div>
-      <label>Fecha inicial</label>
-      <input type="date" id="fechaSemestral" />
-    </div>
-
-    <div class="seccion">
-      <h3>Servicio anual</h3>
-      <div class="checkbox-group">
-        <label><input type="checkbox" value="Afinación motor diésel" class="anual"> Afinación motor diésel</label>
-        <label><input type="checkbox" value="Pruebas de eficiencia" class="anual"> Pruebas de eficiencia</label>
-        <label><input type="checkbox" value="Pruebas hidrostáticas" class="anual"> Pruebas hidrostáticas</label>
-      </div>
-    </div>
-
-    <label>Fecha de inicio del calendario</label>
-    <input type="date" id="fechaInicio" />
-    
-    <button class="boton" onclick="generarFechas()">Generar calendario</button>
-  </div>
-
-  <table id="resultados">
-    <thead><tr><th>Servicio</th><th>Fecha</th><th>Frecuencia</th></tr></thead>
-    <tbody></tbody>
-  </table>
-
-  <button class="boton" onclick="exportarPDF()">Exportar a PDF</button>
-
-  <script>
-    function generarFechas() {
-      const fechaInicio = new Date(document.getElementById("fechaInicio").value);
-      if (!fechaInicio) return alert("Selecciona una fecha de inicio");
-
-      const resultados = [];
-
-      // Semanal
-      const diaSemanal = parseInt(document.getElementById("diaSemanal").value);
-      let fechaS = new Date(fechaInicio);
-      while (fechaS.getDay() !== diaSemanal) fechaS.setDate(fechaS.getDate() + 1);
-      for (let i = 0; i < 52; i++) {
-        let f = new Date(fechaS);
-        f.setDate(f.getDate() + 7 * i);
-        resultados.push(["Equipo de bombeo", f.toISOString().slice(0,10), "Semanal"]);
-      }
-
-      // Mensual
-      const semana = parseInt(document.getElementById("semanaMes").value);
-      const diaMes = parseInt(document.getElementById("diaMensual").value);
-      const serviciosMensuales = document.querySelectorAll(".mensual:checked");
-      let actual = new Date(fechaInicio);
-      for (let m = 0; m < 12; m++) {
-        let año = actual.getFullYear();
-        let mes = actual.getMonth();
-        let count = 0;
-        for (let d = 1; d <= 31; d++) {
-          let f = new Date(año, mes, d);
-          if (f.getMonth() !== mes) break;
-          if (f.getDay() === diaMes) {
-            count++;
-            if (count === semana) {
-              serviciosMensuales.forEach(s => {
-                resultados.push([s.value, f.toISOString().slice(0,10), "Mensual"]);
-              });
-              break;
-            }
-          }
-        }
-        actual.setMonth(mes + 1);
-      }
-
-      // Semestral
-      const fechaSem = new Date(document.getElementById("fechaSemestral").value);
-      const serviciosSem = document.querySelectorAll(".semestral:checked");
-      serviciosSem.forEach(s => {
-        resultados.push([s.value, fechaSem.toISOString().slice(0,10), "Semestral"]);
-        let f2 = new Date(fechaSem);
-        f2.setMonth(f2.getMonth() + 6);
-        resultados.push([s.value, f2.toISOString().slice(0,10), "Semestral"]);
-      });
-
-      // Anual (4 meses después)
-      const serviciosAnual = document.querySelectorAll(".anual:checked");
-      let fechaAnual = new Date(fechaInicio);
-      fechaAnual.setMonth(fechaAnual.getMonth() + 4);
-      serviciosAnual.forEach(s => {
-        resultados.push([s.value, fechaAnual.toISOString().slice(0,10), "Anual"]);
-      });
-
-      // Mostrar resultados
-      const tbody = document.querySelector("#resultados tbody");
-      tbody.innerHTML = "";
-      resultados.forEach(r => {
-        const row = document.createElement("tr");
-        row.className = r[2];
-        r.forEach(col => {
-          const td = document.createElement("td");
-          td.textContent = col;
-          row.appendChild(td);
+    función generarCalendarioVisual() {
+      const calendario = document.getElementById("calendario");
+      const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+      para (sea mes = 0; mes < 12; mes++) {
+        const cont = document.createElement("div");
+        cont.className = "mes";
+        cont.innerHTML = `<h4>${meses[mes]}</h4>`;
+        const dias = document.createElement("div");
+        dias.className = "dias";
+        ["L", "M", "M", "J", "V", "S", "D"].forEach(d => {
+          dias.innerHTML += `<div>${d}</div>`;
         });
-        tbody.appendChild(row);
-      });
+        cont.appendChild(días);
+        const fechas = document.createElement("div");
+        fechas.className = "fechas";
+
+        const primerDia = nueva Fecha(2025, mes, 1);
+        let offset = (primerDia.getDay() + 6) % 7; //lunes=0
+        para (sea i = 0; i < desplazamiento; i++) fechas.innerHTML += "<div></div>";
+
+        const diasMes = nueva Fecha(2025, mes+1, 0).getDate();
+        for (let dia = 1; dia <= diasMes; dia++) {
+          const fecha = `2025-${String(mes+1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+          sea celda = `<div>${dia}`;
+          if (eventos[fecha]) {
+            eventos[fecha].forEach(e => {
+              celda += `<div class="evento ${e.tipo}">${e.texto}</div>`;
+            });
+          }
+          celda += "</div>";
+          fechas.innerHTML += celda;
+        }
+
+        cont.appendChild(fechas);
+        calendario.appendChild(cont);
+      }
     }
 
-    function exportarPDF() {
-      const cliente = document.getElementById("cliente").value || "cliente";
-      const direccion = document.getElementById("direccion").value || "";
-      const fechaInicio = document.getElementById("fechaInicio").value || "fecha";
-      const nombreArchivo = `CAL_${cliente.replace(/\s+/g, '_')}_${fechaInicio.replace(/-/g, '')}.pdf`;
-
-      const tabla = document.querySelector("#resultados").outerHTML;
-      const contenido = document.createElement("div");
-      contenido.style.fontFamily = "Arial, sans-serif";
-      contenido.style.padding = "20px";
-      contenido.innerHTML = `
-        <h2 style="text-align:center;">Calendario de Servicios</h2>
-        <p><strong>Cliente:</strong> ${cliente}</p>
-        <p><strong>Dirección:</strong> ${direccion}</p>
-        <p><strong>Fecha de inicio:</strong> ${fechaInicio}</p>
-        ${tabla}
-      `;
-
-      html2pdf()
-        .set({
-          margin: 5,
-          filename: nombreArchivo,
-          html2canvas: { scale: 1.2 },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-        })
-        .from(contenido)
-        .save();
+    función exportarPDF() {
+      const contenido = documento.cuerpo;
+      html2pdf().set({
+        margen: 5,
+        nombre del archivo: 'CALENDARIO_VISUAL_2025.pdf',
+        html2canvas: { escala: 1 },
+        jsPDF: { unidad: 'mm', formato: 'a4', orientación: 'vertical' }
+      }).from(contenido).save();
     }
+
+    generarCalendarioVisual();
   </script>
-</body>
+</cuerpo>
 </html>
