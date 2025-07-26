@@ -1,334 +1,220 @@
 <!DOCTYPE html>
 <html lang="es">
+>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendario 2025</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 20px;
-        }
-        .calendar-container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            max-width: 800px;
-            width: 100%;
-        }
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-            text-align: center;
-        }
-        .calendar-grid div {
-            padding: 10px;
-            border: 1px solid #ddd;
-            cursor: pointer;
-        }
-        .calendar-grid .header {
-            background: #007bff;
-            color: white;
-            font-weight: bold;
-        }
-        .calendar-grid .day:hover {
-            background: #e0e0e0;
-        }
-        .calendar-grid .event {
-            background: #ffeb3b;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            width: 90%;
-            max-width: 500px;
-        }
-        .modal-content input, .modal-content select, .modal-content textarea {
-            width: 100%;
-            margin: 10px 0;
-            padding: 8px;
-        }
-        button {
-            padding: 10px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #0056b3;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Formulario Calendario de Servicios</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9fafb;
+      color: #1f2937;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #1f2937;
+    }
+    .formulario, .seccion {
+      margin-bottom: 25px;
+      background: #f3f4f6;
+      padding: 15px;
+      border-radius: 10px;
+    }
+    label, select, input {
+      display: block;
+      width: 100%;
+      margin-top: 5px;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    .checkbox-group label {
+      display: inline-block;
+      width: auto;
+      margin-right: 10px;
+    }
+    .boton {
+      display: block;
+      margin: 30px auto;
+      background-color: #1f2937;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    .Semanal { background-color: #bfdbfe; }
+    .Mensual { background-color: #bbf7d0; }
+    .Semestral { background-color: #fed7aa; }
+    .Anual { background-color: #fecaca; }
+  </style>
 </head>
 <body>
-    <div class="calendar-container">
-        <div class="calendar-header">
-            <button onclick="prevMonth()">Anterior</button>
-            <h2 id="month-year">Julio 2025</h2>
-            <button onclick="nextMonth()">Siguiente</button>
-        </div>
-        <button onclick="generatePDF()">Descargar PDF</button>
-        <div class="calendar-grid" id="calendar"></div>
-    </div>
-    <div class="modal" id="eventModal">
-        <div class="modal-content">
-            <h3>Agregar/Editar Evento</h3>
-            <input type="text" id="eventTitle" placeholder="Título del evento" required>
-            <input type="date" id="eventDate">
-            <input type="time" id="eventStartTime" placeholder="Hora de inicio">
-            <input type="time" id="eventEndTime" placeholder="Hora de fin">
-            <textarea id="eventDescription" placeholder="Descripción"></textarea>
-            <select id="eventCategory">
-                <option value="Trabajo">Trabajo</option>
-                <option value="Personal">Personal</option>
-                <option value="Recordatorio">Recordatorio</option>
-                <option value="Otros">Otros</option>
-            </select>
-            <div>
-                <label>Prioridad:</label>
-                <input type="radio" name="priority" value="Baja" checked> Baja
-                <input type="radio" name="priority" value="Media"> Media
-                <input type="radio" name="priority" value="Alta"> Alta
-            </div>
-            <input type="text" id="eventLocation" placeholder="Ubicación (opcional)">
-            <div>
-                <label><input type="checkbox" id="eventReminder"> Recordatorio</input></label>
-                <select id="reminderTime">
-                    <option value="15">15 minutos antes</option>
-                    <option value="30">30 minutos antes</option>
-                    <option value="60">1 hora antes</option>
-                </select>
-            </div>
-            <div>
-                <label>Estado:</label>
-                <input type="radio" name="status" value="Pendiente" checked> Pendiente
-                <input type="radio" name="status" value="Completado"> Completado
-            </div>
-            <button onclick="saveEvent()">Guardar</button>
-            <button onclick="closeModal()">Cerrar</button>
-            <button onclick="deleteEvent()" id="deleteButton" style="display:none;">Eliminar</button>
-        </div>
+  <h1>Calendario de Servicios</h1>
+
+  <div class="formulario">
+    <label>Cliente</label>
+    <input type="text" id="cliente" placeholder="Nombre del cliente" />
+    
+    <label>Dirección</label>
+    <input type="text" id="direccion" placeholder="Dirección" />
+
+    <div class="seccion">
+      <h3>Servicio semanal</h3>
+      <label>Día de servicio (lunes a sábado)</label>
+      <select id="diaSemanal">
+        <option value="1">Lunes</option>
+        <option value="2">Martes</option>
+        <option value="3">Miércoles</option>
+        <option value="4">Jueves</option>
+        <option value="5">Viernes</option>
+        <option value="6">Sábado</option>
+      </select>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script>
-        const { jsPDF } = window.jspdf;
-        let currentMonth = 6; // Julio 2025 (0-based)
-        let currentYear = 2025;
-        let selectedDate = null;
-        let events = JSON.parse(localStorage.getItem('events')) || [];
+    <div class="seccion">
+      <h3>Servicio mensual</h3>
+      <div class="checkbox-group">
+        <label><input type="checkbox" value="Equipo de bombeo" class="mensual"> Equipo de bombeo</label>
+        <label><input type="checkbox" value="Red de rociadores" class="mensual"> Red de rociadores</label>
+        <label><input type="checkbox" value="Red de hidrantes" class="mensual"> Red de hidrantes</label>
+        <label><input type="checkbox" value="Sistema de detección" class="mensual"> Sistema de detección</label>
+      </div>
+      <label>Día mensual</label>
+      <select id="semanaMes">
+        <option value="1">Primer</option>
+        <option value="2">Segundo</option>
+        <option value="3">Tercer</option>
+        <option value="4">Cuarto</option>
+      </select>
+      <select id="diaMensual">
+        <option value="1">Lunes</option>
+        <option value="2">Martes</option>
+        <option value="3">Miércoles</option>
+        <option value="4">Jueves</option>
+        <option value="5">Viernes</option>
+        <option value="6">Sábado</option>
+      </select>
+    </div>
 
-        function renderCalendar() {
-            const calendar = document.getElementById('calendar');
-            const monthYear = document.getElementById('month-year');
-            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            monthYear.textContent = `${getMonthName(currentMonth)} ${currentYear}`;
-            calendar.innerHTML = `
-                <div class="header">Dom</div><div class="header">Lun</div><div class="header">Mar</div>
-                <div class="header">Mié</div><div class="header">Jue</div><div class="header">Vie</div>
-                <div class="header">Sáb</div>
-            `;
+    <div class="seccion">
+      <h3>Servicio semestral</h3>
+      <div class="checkbox-group">
+        <label><input type="checkbox" value="Sistema de Site" class="semestral"> Sistema de Site</label>
+        <label><input type="checkbox" value="Sistema de cocina" class="semestral"> Sistema de cocina</label>
+        <label><input type="checkbox" value="Revisión de válvulas" class="semestral"> Revisión de válvulas</label>
+      </div>
+      <label>Fecha inicial</label>
+      <input type="date" id="fechaSemestral" />
+    </div>
 
-            for (let i = 0; i < firstDay; i++) {
-                calendar.innerHTML += `<div></div>`;
+    <div class="seccion">
+      <h3>Servicio anual</h3>
+      <div class="checkbox-group">
+        <label><input type="checkbox" value="Afinación motor diésel" class="anual"> Afinación motor diésel</label>
+        <label><input type="checkbox" value="Pruebas de eficiencia" class="anual"> Pruebas de eficiencia</label>
+        <label><input type="checkbox" value="Pruebas hidrostáticas" class="anual"> Pruebas hidrostáticas</label>
+      </div>
+    </div>
+
+    <label>Fecha de inicio del calendario</label>
+    <input type="date" id="fechaInicio" />
+    
+    <button class="boton" onclick="generarFechas()">Generar calendario</button>
+  </div>
+
+  <table id="resultados">
+    <thead><tr><th>Servicio</th><th>Fecha</th><th>Frecuencia</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    function generarFechas() {
+      const fechaInicio = new Date(document.getElementById("fechaInicio").value);
+      if (!fechaInicio) return alert("Selecciona una fecha de inicio");
+
+      const resultados = [];
+
+      // Semanal
+      const diaSemanal = parseInt(document.getElementById("diaSemanal").value);
+      let fechaS = new Date(fechaInicio);
+      while (fechaS.getDay() !== diaSemanal) fechaS.setDate(fechaS.getDate() + 1);
+      for (let i = 0; i < 52; i++) {
+        let f = new Date(fechaS);
+        f.setDate(f.getDate() + 7 * i);
+        resultados.push(["Equipo de bombeo", f.toISOString().slice(0,10), "Semanal"]);
+      }
+
+      // Mensual
+      const semana = parseInt(document.getElementById("semanaMes").value);
+      const diaMes = parseInt(document.getElementById("diaMensual").value);
+      const serviciosMensuales = document.querySelectorAll(".mensual:checked");
+      let actual = new Date(fechaInicio);
+      for (let m = 0; m < 12; m++) {
+        let año = actual.getFullYear();
+        let mes = actual.getMonth();
+        let count = 0;
+        for (let d = 1; d <= 31; d++) {
+          let f = new Date(año, mes, d);
+          if (f.getMonth() !== mes) break;
+          if (f.getDay() === diaMes) {
+            count++;
+            if (count === semana) {
+              serviciosMensuales.forEach(s => {
+                resultados.push([s.value, f.toISOString().slice(0,10), "Mensual"]);
+              });
+              break;
             }
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const hasEvent = events.some(e => e.date === dateStr);
-                calendar.innerHTML += `<div class="day ${hasEvent ? 'event' : ''}" onclick="openModal('${dateStr}')">${day}</div>`;
-            }
+          }
         }
+        actual.setMonth(mes + 1);
+      }
 
-        function getMonthName(month) {
-            const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-            return months[month];
-        }
+      // Semestral
+      const fechaSem = new Date(document.getElementById("fechaSemestral").value);
+      const serviciosSem = document.querySelectorAll(".semestral:checked");
+      serviciosSem.forEach(s => {
+        resultados.push([s.value, fechaSem.toISOString().slice(0,10), "Semestral"]);
+        let f2 = new Date(fechaSem);
+        f2.setMonth(f2.getMonth() + 6);
+        resultados.push([s.value, f2.toISOString().slice(0,10), "Semestral"]);
+      });
 
-        function openModal(date) {
-            selectedDate = date;
-            const modal = document.getElementById('eventModal');
-            const existingEvent = events.find(e => e.date === date);
-            document.getElementById('eventDate').value = date;
-            if (existingEvent) {
-                document.getElementById('eventTitle').value = existingEvent.title;
-                document.getElementById('eventStartTime').value = existingEvent.startTime;
-                document.getElementById('eventEndTime').value = existingEvent.endTime;
-                document.getElementById('eventDescription').value = existingEvent.description;
-                document.getElementById('eventCategory').value = existingEvent.category;
-                document.querySelector(`input[name="priority"][value="${existingEvent.priority}"]`).checked = true;
-                document.getElementById('eventLocation').value = existingEvent.location;
-                document.getElementById('eventReminder').checked = existingEvent.reminder;
-                document.getElementById('reminderTime').value = existingEvent.reminderTime;
-                document.querySelector(`input[name="status"][value="${existingEvent.status}"]`).checked = true;
-                document.getElementById('deleteButton').style.display = 'block';
-            } else {
-                document.getElementById('eventTitle').value = '';
-                document.getElementById('eventStartTime').value = '';
-                document.getElementById('eventEndTime').value = '';
-                document.getElementById('eventDescription').value = '';
-                document.getElementById('eventCategory').value = 'Trabajo';
-                document.querySelector(`input[name="priority"][value="Baja"]`).checked = true;
-                document.getElementById('eventLocation').value = '';
-                document.getElementById('eventReminder').checked = false;
-                document.getElementById('reminderTime').value = '15';
-                document.querySelector(`input[name="status"][value="Pendiente"]`).checked = true;
-                document.getElementById('deleteButton').style.display = 'none';
-            }
-            modal.style.display = 'flex';
-        }
+      // Anual (4 meses después)
+      const serviciosAnual = document.querySelectorAll(".anual:checked");
+      let fechaAnual = new Date(fechaInicio);
+      fechaAnual.setMonth(fechaAnual.getMonth() + 4);
+      serviciosAnual.forEach(s => {
+        resultados.push([s.value, fechaAnual.toISOString().slice(0,10), "Anual"]);
+      });
 
-        function closeModal() {
-            document.getElementById('eventModal').style.display = 'none';
-        }
-
-        function saveEvent() {
-            const event = {
-                date: selectedDate,
-                title: document.getElementById('eventTitle').value,
-                startTime: document.getElementById('eventStartTime').value,
-                endTime: document.getElementById('eventEndTime').value,
-                description: document.getElementById('eventDescription').value,
-                category: document.getElementById('eventCategory').value,
-                priority: document.querySelector('input[name="priority"]:checked').value,
-                location: document.getElementById('eventLocation').value,
-                reminder: document.getElementById('eventReminder').checked,
-                reminderTime: document.getElementById('reminderTime').value,
-                status: document.querySelector('input[name="status"]:checked').value
-            };
-            if (!event.title) {
-                alert('El título del evento es obligatorio');
-                return;
-            }
-            const index = events.findIndex(e => e.date === selectedDate);
-            if (index !== -1) {
-                events[index] = event;
-            } else {
-                events.push(event);
-            }
-            localStorage.setItem('events', JSON.stringify(events));
-            renderCalendar();
-            closeModal();
-        }
-
-        function deleteEvent() {
-            events = events.filter(e => e.date !== selectedDate);
-            localStorage.setItem('events', JSON.stringify(events));
-            renderCalendar();
-            closeModal();
-        }
-
-        function prevMonth() {
-            currentMonth--;
-            if (currentMonth < 0) {
-                currentMonth = 11;
-                currentYear--;
-            }
-            renderCalendar();
-        }
-
-        function nextMonth() {
-            currentMonth++;
-            if (currentMonth > 11) {
-                currentMonth = 0;
-                currentYear++;
-            }
-            renderCalendar();
-        }
-
-        function generatePDF() {
-            const doc = new jsPDF();
-            doc.setFontSize(16);
-            doc.text('Calendario 2025', 10, 10);
-            const months = [
-                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-            ];
-            const cellWidth = 45;
-            const cellHeight = 20;
-            let y = 20;
-
-            // Dibujar los 12 meses en una cuadrícula 3x4
-            for (let month = 0; month < 12; month++) {
-                const col = month % 4;
-                const row = Math.floor(month / 4);
-                const x = 10 + col * cellWidth;
-                y = 20 + row * (cellHeight * 8);
-                doc.setFontSize(10);
-                doc.text(months[month], x, y);
-                y += 5;
-
-                const firstDay = new Date(2025, month, 1).getDay();
-                const daysInMonth = new Date(2025, month + 1, 0).getDate();
-                let dayCount = 1;
-
-                // Dibujar encabezados
-                const days = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
-                for (let i = 0; i < 7; i++) {
-                    doc.text(days[i], x + i * 6, y);
-                }
-                y += 5;
-
-                // Dibujar días
-                let currentDay = 0;
-                for (let i = 0; i < 6; i++) {
-                    for (let j = 0; j < 7; j++) {
-                        if (i === 0 && j < firstDay) {
-                            doc.text('', x + j * 6, y);
-                        } else if (dayCount <= daysInMonth) {
-                            const dateStr = `2025-${String(month + 1).padStart(2, '0')}-${String(dayCount).padStart(2, '0')}`;
-                            const hasEvent = events.some(e => e.date === dateStr);
-                            doc.text(dayCount.toString(), x + j * 6, y);
-                            if (hasEvent) {
-                                doc.circle(x + j * 6 + 2, y - 2, 1, 'F');
-                            }
-                            dayCount++;
-                        }
-                    }
-                    y += 5;
-                }
-
-                // Listar eventos
-                const monthEvents = events.filter(e => e.date.startsWith(`2025-${String(month + 1).padStart(2, '0')}`));
-                if (monthEvents.length > 0) {
-                    y += 5;
-                    doc.setFontSize(8);
-                    monthEvents.forEach(event => {
-                        doc.text(`${event.date}: ${event.title} (${event.category}, ${event.priority})`, x, y);
-                        y += 5;
-                    });
-                }
-            }
-
-            doc.save('Calendario_2025.pdf');
-        }
-
-        renderCalendar();
-    </script>
+      // Mostrar resultados
+      const tbody = document.querySelector("#resultados tbody");
+      tbody.innerHTML = "";
+      resultados.forEach(r => {
+        const row = document.createElement("tr");
+        row.className = r[2];
+        r.forEach(col => {
+          const td = document.createElement("td");
+          td.textContent = col;
+          row.appendChild(td);
+        });
+        tbody.appendChild(row);
+      });
+    }
+  </script>
 </body>
 </html>
