@@ -1,243 +1,334 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Calendario de Servicios</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9fafb;
-      color: #1f2937;
-      padding: 20px;
-    }
-    h1, h2, h3 {
-      color: #1f2937;
-      text-align: center;
-    }
-    .campo {
-      margin-bottom: 10px;
-    }
-    label {
-      font-weight: bold;
-      display: block;
-    }
-    input[type="text"], input[type="date"] {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    .boton {
-      display: block;
-      margin: 20px auto;
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #1f2937;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .pdf-export {
-      zoom: 0.65;
-    }
-    .actividades {
-      background: #f3f4f6;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 30px;
-    }
-    ul {
-      padding-left: 20px;
-      margin-top: 0;
-      margin-bottom: 10px;
-    }
-    .calendario {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 5px;
-      margin-top: 20px;
-      font-size: 12px;
-    }
-    .dia {
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      padding: 5px;
-      height: 70px;
-      position: relative;
-    }
-    .dia span {
-      font-weight: bold;
-    }
-    .etiqueta {
-      position: absolute;
-      bottom: 5px;
-      left: 5px;
-      right: 5px;
-      font-size: 10px;
-      padding: 2px;
-      border-radius: 4px;
-      text-align: center;
-      color: white;
-    }
-    .Semanal { background-color: #2563eb; }
-    .Mensual { background-color: #10b981; }
-    .Semestral { background-color: #f59e0b; }
-    .Anual { background-color: #dc2626; }
-    .mes {
-      margin-top: 30px;
-    }
-    .nombre-mes {
-      font-size: 16px;
-      font-weight: bold;
-      margin-bottom: 5px;
-      text-align: center;
-      color: #111827;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario 2025</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .calendar-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            text-align: center;
+        }
+        .calendar-grid div {
+            padding: 10px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
+        .calendar-grid .header {
+            background: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+        .calendar-grid .day:hover {
+            background: #e0e0e0;
+        }
+        .calendar-grid .event {
+            background: #ffeb3b;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            width: 90%;
+            max-width: 500px;
+        }
+        .modal-content input, .modal-content select, .modal-content textarea {
+            width: 100%;
+            margin: 10px 0;
+            padding: 8px;
+        }
+        button {
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
 </head>
 <body>
-  <div id="contenido">
-    <h1>Calendario de Actividades de Servicio</h1>
-
-    <div class="campo">
-      <label for="cliente">Nombre del Cliente:</label>
-      <input type="text" id="cliente" placeholder="Ej: SAFRAN Planta 2 y 3" />
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <button onclick="prevMonth()">Anterior</button>
+            <h2 id="month-year">Julio 2025</h2>
+            <button onclick="nextMonth()">Siguiente</button>
+        </div>
+        <button onclick="generatePDF()">Descargar PDF</button>
+        <div class="calendar-grid" id="calendar"></div>
+    </div>
+    <div class="modal" id="eventModal">
+        <div class="modal-content">
+            <h3>Agregar/Editar Evento</h3>
+            <input type="text" id="eventTitle" placeholder="Título del evento" required>
+            <input type="date" id="eventDate">
+            <input type="time" id="eventStartTime" placeholder="Hora de inicio">
+            <input type="time" id="eventEndTime" placeholder="Hora de fin">
+            <textarea id="eventDescription" placeholder="Descripción"></textarea>
+            <select id="eventCategory">
+                <option value="Trabajo">Trabajo</option>
+                <option value="Personal">Personal</option>
+                <option value="Recordatorio">Recordatorio</option>
+                <option value="Otros">Otros</option>
+            </select>
+            <div>
+                <label>Prioridad:</label>
+                <input type="radio" name="priority" value="Baja" checked> Baja
+                <input type="radio" name="priority" value="Media"> Media
+                <input type="radio" name="priority" value="Alta"> Alta
+            </div>
+            <input type="text" id="eventLocation" placeholder="Ubicación (opcional)">
+            <div>
+                <label><input type="checkbox" id="eventReminder"> Recordatorio</input></label>
+                <select id="reminderTime">
+                    <option value="15">15 minutos antes</option>
+                    <option value="30">30 minutos antes</option>
+                    <option value="60">1 hora antes</option>
+                </select>
+            </div>
+            <div>
+                <label>Estado:</label>
+                <input type="radio" name="status" value="Pendiente" checked> Pendiente
+                <input type="radio" name="status" value="Completado"> Completado
+            </div>
+            <button onclick="saveEvent()">Guardar</button>
+            <button onclick="closeModal()">Cerrar</button>
+            <button onclick="deleteEvent()" id="deleteButton" style="display:none;">Eliminar</button>
+        </div>
     </div>
 
-    <div class="campo">
-      <label for="fecha-inicial">Fecha Inicial:</label>
-      <input type="date" id="fecha-inicial" />
-    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        const { jsPDF } = window.jspdf;
+        let currentMonth = 6; // Julio 2025 (0-based)
+        let currentYear = 2025;
+        let selectedDate = null;
+        let events = JSON.parse(localStorage.getItem('events')) || [];
 
-    <div class="actividades">
-      <h2>Actividades por Frecuencia</h2>
+        function renderCalendar() {
+            const calendar = document.getElementById('calendar');
+            const monthYear = document.getElementById('month-year');
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            monthYear.textContent = `${getMonthName(currentMonth)} ${currentYear}`;
+            calendar.innerHTML = `
+                <div class="header">Dom</div><div class="header">Lun</div><div class="header">Mar</div>
+                <div class="header">Mié</div><div class="header">Jue</div><div class="header">Vie</div>
+                <div class="header">Sáb</div>
+            `;
 
-      <h3>🔁 Servicio Semanal</h3>
-      <ul>
-        <li>Arranque de bombas</li>
-      </ul>
-
-      <h3>📅 Servicio Mensual</h3>
-      <ul>
-        <li>Equipo de bombeo</li>
-        <li>Red de hidrantes</li>
-      </ul>
-
-      <h3>🌓 Servicio Semestral</h3>
-      <ul>
-        <li>Inspección a sistema Ansul</li>
-        <li>Inspección a Site</li>
-        <li>Cierre/apertura de válvulas</li>
-      </ul>
-
-      <h3>📆 Servicio Anual</h3>
-      <ul>
-        <li>Afinación de motor de combustión</li>
-        <li>Pruebas hidrostáticas</li>
-        <li>Pruebas de eficiencia</li>
-        <li>Inspección acoplamiento mecánico</li>
-      </ul>
-    </div>
-
-    <button class="boton" onclick="generarCalendario()">Marcar Calendario</button>
-
-    <div id="calendarios"></div>
-  </div>
-
-  <button class="boton" onclick="exportarPDF()">Exportar a PDF</button>
-
-  <script>
-    function generarCalendario() {
-      const inicio = new Date(document.getElementById('fecha-inicial').value);
-      const contenedor = document.getElementById('calendarios');
-      contenedor.innerHTML = '';
-
-      if (!inicio.getTime()) return;
-
-      let actual = new Date(inicio);
-      let fin = new Date(inicio);
-      fin.setFullYear(fin.getFullYear() + 1);
-
-      while (actual <= fin) {
-        const year = actual.getFullYear();
-        const month = actual.getMonth();
-
-        const diasEnMes = new Date(year, month + 1, 0).getDate();
-        const mesNombre = actual.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
-        const primerDiaSemana = new Date(year, month, 1).getDay();
-
-        const calendarioHTML = document.createElement('div');
-        calendarioHTML.classList.add('mes');
-
-        const tituloMes = document.createElement('div');
-        tituloMes.className = 'nombre-mes';
-        tituloMes.textContent = mesNombre.charAt(0).toUpperCase() + mesNombre.slice(1);
-        calendarioHTML.appendChild(tituloMes);
-
-        const grid = document.createElement('div');
-        grid.className = 'calendario';
-
-        for (let i = 0; i < (primerDiaSemana === 0 ? 6 : primerDiaSemana - 1); i++) {
-          grid.appendChild(document.createElement('div'));
+            for (let i = 0; i < firstDay; i++) {
+                calendar.innerHTML += `<div></div>`;
+            }
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const hasEvent = events.some(e => e.date === dateStr);
+                calendar.innerHTML += `<div class="day ${hasEvent ? 'event' : ''}" onclick="openModal('${dateStr}')">${day}</div>`;
+            }
         }
 
-        for (let dia = 1; dia <= diasEnMes; dia++) {
-          const fecha = new Date(year, month, dia);
-          const div = document.createElement('div');
-          div.className = 'dia';
-          div.innerHTML = `<span>${dia}</span>`;
-
-          const etiquetas = [];
-
-          if (fecha.getDay() === 1) etiquetas.push("Semanal");
-          if (dia <= 7 && fecha.getDay() === 1) etiquetas.push("Mensual");
-          if ((dia === 1 && month === 5) || (dia === 1 && month === 11)) etiquetas.push("Semestral");
-          if (dia === 1 && month === 7) etiquetas.push("Anual");
-
-          etiquetas.forEach(tag => {
-            const etq = document.createElement('div');
-            etq.className = `etiqueta ${tag}`;
-            etq.textContent = tag;
-            div.appendChild(etq);
-          });
-
-          grid.appendChild(div);
+        function getMonthName(month) {
+            const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            return months[month];
         }
 
-        calendarioHTML.appendChild(grid);
-        contenedor.appendChild(calendarioHTML);
+        function openModal(date) {
+            selectedDate = date;
+            const modal = document.getElementById('eventModal');
+            const existingEvent = events.find(e => e.date === date);
+            document.getElementById('eventDate').value = date;
+            if (existingEvent) {
+                document.getElementById('eventTitle').value = existingEvent.title;
+                document.getElementById('eventStartTime').value = existingEvent.startTime;
+                document.getElementById('eventEndTime').value = existingEvent.endTime;
+                document.getElementById('eventDescription').value = existingEvent.description;
+                document.getElementById('eventCategory').value = existingEvent.category;
+                document.querySelector(`input[name="priority"][value="${existingEvent.priority}"]`).checked = true;
+                document.getElementById('eventLocation').value = existingEvent.location;
+                document.getElementById('eventReminder').checked = existingEvent.reminder;
+                document.getElementById('reminderTime').value = existingEvent.reminderTime;
+                document.querySelector(`input[name="status"][value="${existingEvent.status}"]`).checked = true;
+                document.getElementById('deleteButton').style.display = 'block';
+            } else {
+                document.getElementById('eventTitle').value = '';
+                document.getElementById('eventStartTime').value = '';
+                document.getElementById('eventEndTime').value = '';
+                document.getElementById('eventDescription').value = '';
+                document.getElementById('eventCategory').value = 'Trabajo';
+                document.querySelector(`input[name="priority"][value="Baja"]`).checked = true;
+                document.getElementById('eventLocation').value = '';
+                document.getElementById('eventReminder').checked = false;
+                document.getElementById('reminderTime').value = '15';
+                document.querySelector(`input[name="status"][value="Pendiente"]`).checked = true;
+                document.getElementById('deleteButton').style.display = 'none';
+            }
+            modal.style.display = 'flex';
+        }
 
-        actual.setMonth(actual.getMonth() + 1);
-        actual.setDate(1);
-      }
-    }
+        function closeModal() {
+            document.getElementById('eventModal').style.display = 'none';
+        }
 
-    function exportarPDF() {
-      const cliente = document.getElementById("cliente").value || "cliente";
-      const fecha = new Date().toISOString().slice(2,10).replace(/-/g, '');
-      const nombreArchivo = `CAL_${cliente.replace(/\s+/g, '_')}_${fecha}.pdf`;
+        function saveEvent() {
+            const event = {
+                date: selectedDate,
+                title: document.getElementById('eventTitle').value,
+                startTime: document.getElementById('eventStartTime').value,
+                endTime: document.getElementById('eventEndTime').value,
+                description: document.getElementById('eventDescription').value,
+                category: document.getElementById('eventCategory').value,
+                priority: document.querySelector('input[name="priority"]:checked').value,
+                location: document.getElementById('eventLocation').value,
+                reminder: document.getElementById('eventReminder').checked,
+                reminderTime: document.getElementById('reminderTime').value,
+                status: document.querySelector('input[name="status"]:checked').value
+            };
+            if (!event.title) {
+                alert('El título del evento es obligatorio');
+                return;
+            }
+            const index = events.findIndex(e => e.date === selectedDate);
+            if (index !== -1) {
+                events[index] = event;
+            } else {
+                events.push(event);
+            }
+            localStorage.setItem('events', JSON.stringify(events));
+            renderCalendar();
+            closeModal();
+        }
 
-      const element = document.getElementById("contenido");
-      element.classList.add("pdf-export");
+        function deleteEvent() {
+            events = events.filter(e => e.date !== selectedDate);
+            localStorage.setItem('events', JSON.stringify(events));
+            renderCalendar();
+            closeModal();
+        }
 
-      html2pdf()
-        .set({
-          margin: 5,
-          filename: nombreArchivo,
-          html2canvas: { scale: 0.8, useCORS: true },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-        })
-        .from(element)
-        .save()
-        .then(() => {
-          element.classList.remove("pdf-export");
-        });
-    }
-  </script>
+        function prevMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar();
+        }
+
+        function generatePDF() {
+            const doc = new jsPDF();
+            doc.setFontSize(16);
+            doc.text('Calendario 2025', 10, 10);
+            const months = [
+                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+            ];
+            const cellWidth = 45;
+            const cellHeight = 20;
+            let y = 20;
+
+            // Dibujar los 12 meses en una cuadrícula 3x4
+            for (let month = 0; month < 12; month++) {
+                const col = month % 4;
+                const row = Math.floor(month / 4);
+                const x = 10 + col * cellWidth;
+                y = 20 + row * (cellHeight * 8);
+                doc.setFontSize(10);
+                doc.text(months[month], x, y);
+                y += 5;
+
+                const firstDay = new Date(2025, month, 1).getDay();
+                const daysInMonth = new Date(2025, month + 1, 0).getDate();
+                let dayCount = 1;
+
+                // Dibujar encabezados
+                const days = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+                for (let i = 0; i < 7; i++) {
+                    doc.text(days[i], x + i * 6, y);
+                }
+                y += 5;
+
+                // Dibujar días
+                let currentDay = 0;
+                for (let i = 0; i < 6; i++) {
+                    for (let j = 0; j < 7; j++) {
+                        if (i === 0 && j < firstDay) {
+                            doc.text('', x + j * 6, y);
+                        } else if (dayCount <= daysInMonth) {
+                            const dateStr = `2025-${String(month + 1).padStart(2, '0')}-${String(dayCount).padStart(2, '0')}`;
+                            const hasEvent = events.some(e => e.date === dateStr);
+                            doc.text(dayCount.toString(), x + j * 6, y);
+                            if (hasEvent) {
+                                doc.circle(x + j * 6 + 2, y - 2, 1, 'F');
+                            }
+                            dayCount++;
+                        }
+                    }
+                    y += 5;
+                }
+
+                // Listar eventos
+                const monthEvents = events.filter(e => e.date.startsWith(`2025-${String(month + 1).padStart(2, '0')}`));
+                if (monthEvents.length > 0) {
+                    y += 5;
+                    doc.setFontSize(8);
+                    monthEvents.forEach(event => {
+                        doc.text(`${event.date}: ${event.title} (${event.category}, ${event.priority})`, x, y);
+                        y += 5;
+                    });
+                }
+            }
+
+            doc.save('Calendario_2025.pdf');
+        }
+
+        renderCalendar();
+    </script>
 </body>
 </html>
