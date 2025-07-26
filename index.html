@@ -2,131 +2,166 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🐾 Adivina el Animal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calendario de Servicios</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f4f8;
+      font-family: Arial, sans-serif;
+      background: #f9fafb;
+      margin: 20px;
       color: #1f2937;
-      text-align: center;
-      padding: 40px;
     }
     h1 {
-      color: #2563eb;
+      text-align: center;
+      color: #1f2937;
     }
-    .pista {
-      margin: 20px auto;
-      font-size: 20px;
-      background-color: #e0e7ff;
-      padding: 20px;
+    .cliente {
+      margin-bottom: 20px;
+    }
+    .seccion {
+      background: #f3f4f6;
+      padding: 15px;
       border-radius: 10px;
-      width: 80%;
-      max-width: 500px;
+      margin-bottom: 20px;
     }
-    input {
-      padding: 10px;
-      font-size: 18px;
-      width: 250px;
-      margin-top: 10px;
+    .seccion h2 {
+      margin-top: 0;
+      color: #1f2937;
+      border-bottom: 1px solid #d1d5db;
+      padding-bottom: 5px;
     }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-top: 15px;
-      background-color: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
+    .actividad {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px dashed #d1d5db;
     }
-    button:hover {
-      background-color: #1e40af;
+    .actividad:last-child {
+      border-bottom: none;
     }
-    .resultado {
-      margin-top: 20px;
-      font-size: 22px;
+    label {
       font-weight: bold;
     }
-    #imagenAnimal {
-      margin-top: 20px;
-      display: none;
-      width: 300px;
-      max-width: 90%;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    input[type="date"] {
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .boton {
+      display: block;
+      margin: 30px auto;
+      background-color: #1f2937;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .boton:hover {
+      background-color: #374151;
     }
   </style>
 </head>
 <body>
+  <div id="contenido">
+    <h1>Calendario de Actividades de Servicio</h1>
+    
+    <div class="cliente">
+      <label for="cliente">Nombre del Cliente:</label>
+      <input type="text" id="cliente" placeholder="Ej: SAFRAN Planta 2 y 3" />
+    </div>
 
-  <h1>🐾 Adivina el Animal</h1>
-  <p class="pista" id="pista">Cargando pista...</p>
+    <!-- Sección Mensual -->
+    <div class="seccion">
+      <h2>Servicio Mensual</h2>
+      <div class="actividad">
+        <span>Equipo de bombeo</span>
+        <input type="date" />
+      </div>
+      <div class="actividad">
+        <span>Red de hidrantes</span>
+        <input type="date" />
+      </div>
+    </div>
 
-  <input type="text" id="respuesta" placeholder="¿Qué animal crees que es?" />
-  <br>
-  <button onclick="verificarRespuesta()">Adivinar</button>
-  <div class="resultado" id="resultado"></div>
-  <img id="imagenAnimal" src="" alt="Imagen del animal" />
+    <!-- Sección Semestral -->
+    <div class="seccion">
+      <h2>Servicio Semestral</h2>
+      <div class="actividad">
+        <span>Inspección a sistema Ansul</span>
+        <input type="date" />
+      </div>
+      <div class="actividad">
+        <span>Inspección a Site</span>
+        <input type="date" />
+      </div>
+      <div class="actividad">
+        <span>Cierre/apertura de válvulas</span>
+        <input type="date" />
+      </div>
+    </div>
+
+    <!-- Sección Anual -->
+    <div class="seccion">
+      <h2>Servicio Anual</h2>
+      <div class="actividad">
+        <span>Afinación de motor de combustión</span>
+        <input type="date" />
+      </div>
+      <div class="actividad">
+        <span>Pruebas hidrostáticas</span>
+        <input type="date" />
+      </div>
+      <div class="actividad">
+        <span>Pruebas de eficiencia</span>
+        <input type="date" />
+      </div>
+      <div class="actividad">
+        <span>Inspección acoplamiento mecánico</span>
+        <input type="date" />
+      </div>
+    </div>
+
+    <!-- Sección Semanal -->
+    <div class="seccion">
+      <h2>Servicio Semanal</h2>
+      <div class="actividad">
+        <span>Arranque de bombas</span>
+        <input type="date" />
+      </div>
+    </div>
+  </div>
+
+  <button class="boton" onclick="exportarPDF()">Exportar a PDF</button>
 
   <script>
-    const animales = [
-      {
-        nombre: "elefante",
-        pista: "Soy el animal terrestre más grande y tengo una trompa muy larga.",
-        imagen: "https://upload.wikimedia.org/wikipedia/commons/3/37/African_Bush_Elephant.jpg"
-      },
-      {
-        nombre: "jirafa",
-        pista: "Tengo el cuello más largo del reino animal.",
-        imagen: "https://upload.wikimedia.org/wikipedia/commons/9/9f/Giraffe_standing.jpg"
-      },
-      {
-        nombre: "león",
-        pista: "Soy conocido como el rey de la selva.",
-        imagen: "https://upload.wikimedia.org/wikipedia/commons/7/73/Lion_waiting_in_Namibia.jpg"
-      },
-      {
-        nombre: "pingüino",
-        pista: "Soy un ave, pero no puedo volar. Me deslizo en el hielo.",
-        imagen: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Emperor_Penguin_Manchot_empereur.jpg"
-      },
-      {
-        nombre: "canguro",
-        pista: "Vivo en Australia y llevo a mis crías en una bolsa.",
-        imagen: "https://upload.wikimedia.org/wikipedia/commons/0/0c/Kangaroo_Australia_01.jpg"
-      },
-      {
-        nombre: "murciélago",
-        pista: "Soy el único mamífero que puede volar.",
-        imagen: "https://upload.wikimedia.org/wikipedia/commons/1/1d/Common_fruit_bat.jpg"
-      }
-    ];
+    function exportarPDF() {
+      const cliente = document.getElementById("cliente").value || "cliente";
+      const fecha = new Date().toISOString().slice(2,10).replace(/-/g, '');
+      const nombreArchivo = `CAL_${cliente.replace(/\s+/g, '_')}_${fecha}.pdf`;
 
-    let animalActual = animales[Math.floor(Math.random() * animales.length)];
-
-    document.getElementById("pista").textContent = animalActual.pista;
-
-    function verificarRespuesta() {
-      const respuestaUsuario = document.getElementById("respuesta").value.toLowerCase().trim();
-      const resultado = document.getElementById("resultado");
-      const imagen = document.getElementById("imagenAnimal");
-
-      if (respuestaUsuario === animalActual.nombre) {
-        resultado.textContent = "🎉 ¡Correcto! Era un " + animalActual.nombre + ".";
-        resultado.style.color = "green";
-        imagen.src = animalActual.imagen;
-        imagen.style.display = "block";
-
-        // Reiniciar después de 5 segundos
-        setTimeout(() => location.reload(), 5000);
-      } else {
-        resultado.textContent = "❌ Incorrecto. Intenta otra vez.";
-        resultado.style.color = "red";
-        imagen.style.display = "none";
-      }
+      const element = document.getElementById("contenido");
+      html2pdf()
+        .set({
+          margin: 10,
+          filename: nombreArchivo,
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+        })
+        .from(element)
+        .save();
     }
   </script>
-
 </body>
 </html>
