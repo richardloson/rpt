@@ -1,220 +1,50 @@
-<!DOCTYPE html>
-<html lang="es">
->
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Formulario Calendario de Servicios</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9fafb;
-      color: #1f2937;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      color: #1f2937;
-    }
-    .formulario, .seccion {
-      margin-bottom: 25px;
-      background: #f3f4f6;
-      padding: 15px;
-      border-radius: 10px;
-    }
-    label, select, input {
-      display: block;
-      width: 100%;
-      margin-top: 5px;
-      margin-bottom: 10px;
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    .checkbox-group label {
-      display: inline-block;
-      width: auto;
-      margin-right: 10px;
-    }
-    .boton {
-      display: block;
-      margin: 30px auto;
-      background-color: #1f2937;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      padding: 8px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-    .Semanal { background-color: #bfdbfe; }
-    .Mensual { background-color: #bbf7d0; }
-    .Semestral { background-color: #fed7aa; }
-    .Anual { background-color: #fecaca; }
-  </style>
-</head>
-<body>
-  <h1>Calendario de Servicios</h1>
+<!-- Usa el mismo código anterior -->
+<!-- Agrega este botón después de la tabla: -->
+<button class="boton" onclick="exportarPDF()">Exportar a PDF</button>
 
-  <div class="formulario">
-    <label>Cliente</label>
-    <input type="text" id="cliente" placeholder="Nombre del cliente" />
-    
-    <label>Dirección</label>
-    <input type="text" id="direccion" placeholder="Dirección" />
+<!-- Y pega este SCRIPT justo antes de cerrar el </body>: -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+  function exportarPDF() {
+    const cliente = document.getElementById("cliente").value || "cliente";
+    const fechaInicio = document.getElementById("fechaInicio").value || "fecha";
+    const nombreArchivo = `CAL_${cliente.replace(/\s+/g, '_')}_${fechaInicio.replace(/-/g, '')}.pdf`;
 
-    <div class="seccion">
-      <h3>Servicio semanal</h3>
-      <label>Día de servicio (lunes a sábado)</label>
-      <select id="diaSemanal">
-        <option value="1">Lunes</option>
-        <option value="2">Martes</option>
-        <option value="3">Miércoles</option>
-        <option value="4">Jueves</option>
-        <option value="5">Viernes</option>
-        <option value="6">Sábado</option>
-      </select>
-    </div>
+    // Crear una copia temporal del contenido para exportar limpio
+    const contenedor = document.createElement("div");
+    contenedor.style.fontFamily = "Arial, sans-serif";
+    contenedor.style.padding = "20px";
+    contenedor.innerHTML = `
+      <h2 style="text-align:center;">Calendario de Servicios</h2>
+      <p><strong>Cliente:</strong> ${cliente}</p>
+      <p><strong>Dirección:</strong> ${document.getElementById("direccion").value}</p>
+      <p><strong>Fecha de inicio:</strong> ${fechaInicio}</p>
+      <table style="width:100%; border-collapse: collapse; font-size:10px;">
+        <thead>
+          <tr style="background:#e5e7eb;">
+            <th style="border:1px solid #ccc; padding:4px;">Servicio</th>
+            <th style="border:1px solid #ccc; padding:4px;">Fecha</th>
+            <th style="border:1px solid #ccc; padding:4px;">Frecuencia</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${Array.from(document.querySelectorAll("#resultados tbody tr")).map(tr => `
+            <tr>
+              ${Array.from(tr.children).map(td => `<td style="border:1px solid #ccc; padding:4px;">${td.textContent}</td>`).join("")}
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
 
-    <div class="seccion">
-      <h3>Servicio mensual</h3>
-      <div class="checkbox-group">
-        <label><input type="checkbox" value="Equipo de bombeo" class="mensual"> Equipo de bombeo</label>
-        <label><input type="checkbox" value="Red de rociadores" class="mensual"> Red de rociadores</label>
-        <label><input type="checkbox" value="Red de hidrantes" class="mensual"> Red de hidrantes</label>
-        <label><input type="checkbox" value="Sistema de detección" class="mensual"> Sistema de detección</label>
-      </div>
-      <label>Día mensual</label>
-      <select id="semanaMes">
-        <option value="1">Primer</option>
-        <option value="2">Segundo</option>
-        <option value="3">Tercer</option>
-        <option value="4">Cuarto</option>
-      </select>
-      <select id="diaMensual">
-        <option value="1">Lunes</option>
-        <option value="2">Martes</option>
-        <option value="3">Miércoles</option>
-        <option value="4">Jueves</option>
-        <option value="5">Viernes</option>
-        <option value="6">Sábado</option>
-      </select>
-    </div>
-
-    <div class="seccion">
-      <h3>Servicio semestral</h3>
-      <div class="checkbox-group">
-        <label><input type="checkbox" value="Sistema de Site" class="semestral"> Sistema de Site</label>
-        <label><input type="checkbox" value="Sistema de cocina" class="semestral"> Sistema de cocina</label>
-        <label><input type="checkbox" value="Revisión de válvulas" class="semestral"> Revisión de válvulas</label>
-      </div>
-      <label>Fecha inicial</label>
-      <input type="date" id="fechaSemestral" />
-    </div>
-
-    <div class="seccion">
-      <h3>Servicio anual</h3>
-      <div class="checkbox-group">
-        <label><input type="checkbox" value="Afinación motor diésel" class="anual"> Afinación motor diésel</label>
-        <label><input type="checkbox" value="Pruebas de eficiencia" class="anual"> Pruebas de eficiencia</label>
-        <label><input type="checkbox" value="Pruebas hidrostáticas" class="anual"> Pruebas hidrostáticas</label>
-      </div>
-    </div>
-
-    <label>Fecha de inicio del calendario</label>
-    <input type="date" id="fechaInicio" />
-    
-    <button class="boton" onclick="generarFechas()">Generar calendario</button>
-  </div>
-
-  <table id="resultados">
-    <thead><tr><th>Servicio</th><th>Fecha</th><th>Frecuencia</th></tr></thead>
-    <tbody></tbody>
-  </table>
-
-  <script>
-    function generarFechas() {
-      const fechaInicio = new Date(document.getElementById("fechaInicio").value);
-      if (!fechaInicio) return alert("Selecciona una fecha de inicio");
-
-      const resultados = [];
-
-      // Semanal
-      const diaSemanal = parseInt(document.getElementById("diaSemanal").value);
-      let fechaS = new Date(fechaInicio);
-      while (fechaS.getDay() !== diaSemanal) fechaS.setDate(fechaS.getDate() + 1);
-      for (let i = 0; i < 52; i++) {
-        let f = new Date(fechaS);
-        f.setDate(f.getDate() + 7 * i);
-        resultados.push(["Equipo de bombeo", f.toISOString().slice(0,10), "Semanal"]);
-      }
-
-      // Mensual
-      const semana = parseInt(document.getElementById("semanaMes").value);
-      const diaMes = parseInt(document.getElementById("diaMensual").value);
-      const serviciosMensuales = document.querySelectorAll(".mensual:checked");
-      let actual = new Date(fechaInicio);
-      for (let m = 0; m < 12; m++) {
-        let año = actual.getFullYear();
-        let mes = actual.getMonth();
-        let count = 0;
-        for (let d = 1; d <= 31; d++) {
-          let f = new Date(año, mes, d);
-          if (f.getMonth() !== mes) break;
-          if (f.getDay() === diaMes) {
-            count++;
-            if (count === semana) {
-              serviciosMensuales.forEach(s => {
-                resultados.push([s.value, f.toISOString().slice(0,10), "Mensual"]);
-              });
-              break;
-            }
-          }
-        }
-        actual.setMonth(mes + 1);
-      }
-
-      // Semestral
-      const fechaSem = new Date(document.getElementById("fechaSemestral").value);
-      const serviciosSem = document.querySelectorAll(".semestral:checked");
-      serviciosSem.forEach(s => {
-        resultados.push([s.value, fechaSem.toISOString().slice(0,10), "Semestral"]);
-        let f2 = new Date(fechaSem);
-        f2.setMonth(f2.getMonth() + 6);
-        resultados.push([s.value, f2.toISOString().slice(0,10), "Semestral"]);
-      });
-
-      // Anual (4 meses después)
-      const serviciosAnual = document.querySelectorAll(".anual:checked");
-      let fechaAnual = new Date(fechaInicio);
-      fechaAnual.setMonth(fechaAnual.getMonth() + 4);
-      serviciosAnual.forEach(s => {
-        resultados.push([s.value, fechaAnual.toISOString().slice(0,10), "Anual"]);
-      });
-
-      // Mostrar resultados
-      const tbody = document.querySelector("#resultados tbody");
-      tbody.innerHTML = "";
-      resultados.forEach(r => {
-        const row = document.createElement("tr");
-        row.className = r[2];
-        r.forEach(col => {
-          const td = document.createElement("td");
-          td.textContent = col;
-          row.appendChild(td);
-        });
-        tbody.appendChild(row);
-      });
-    }
-  </script>
-</body>
-</html>
+    html2pdf()
+      .set({
+        margin: 5,
+        filename: nombreArchivo,
+        html2canvas: { scale: 1.2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+      })
+      .from(contenedor)
+      .save();
+  }
+</script>
